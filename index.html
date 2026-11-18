@@ -461,6 +461,7 @@
   .btn:active{transform:translateY(1px);}
   .btn.ghost{background:var(--white);border-color:var(--line);color:var(--ink-soft);font-weight:600;}
   .btn.ghost:hover{border-color:var(--blue-200);color:var(--blue-700);}
+  a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
   .btn.sm{padding:9px 12px;font-size:13px;border-radius:11px;}
   .btn.blue{background:var(--blue-600);color:#fff;}
   .btn.blue:hover{background:var(--blue-700);}
@@ -1180,6 +1181,7 @@
 
       <div class="send-bar" id="sendBar">
         <button id="copySelected" class="btn copy" type="button">📋 선택한 글 피클에게 보내기 (복사)</button>
+        <a id="openNaverWrite" class="btn ghost sm" href="https://blog.naver.com/somjjang138/postwrite" target="_blank" rel="noopener noreferrer">✍️ 네이버 글쓰기 열기</a>
         <button id="clearSelected" class="btn ghost sm" type="button">선택 항목 완료(비우기)</button>
       </div>
     </section>

@@ -1574,6 +1574,7 @@
       .replace(/^#{0,6}\s*본문\s*/, '')
       .replace(/^#{1,6}\s*/gm, '')
       .replace(/\*\*/g, '')
+      .replace(/==/g, '')
       .replace(/^\s*[-*•]\s*/gm, '')
       .replace(/\s+/g, ' ')
       .trim();
@@ -2034,7 +2035,7 @@
           '<button class="btn blue sm" type="button" data-act="toNaver" data-id="' + escapeHtml(d.id) + '">' + (sent ? '📤 다시 보내기' : '📤 네이버 대기함으로 옮기기') + '</button>' +
           '<button class="btn ghost sm" type="button" data-act="copy" data-id="' + escapeHtml(d.id) + '">복사</button>' +
           '<button class="btn ghost sm danger" type="button" data-act="del" data-id="' + escapeHtml(d.id) + '">🗑️ 삭제</button>' +
-        '</div>' + +
+        '</div>' +
       '</article>';
     }
     list.innerHTML = html;

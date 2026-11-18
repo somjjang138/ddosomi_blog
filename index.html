@@ -2498,11 +2498,12 @@
     return out;
   }
 
-  function parseTitles(text) {
+  function parseTitles(text, max) {
+    var limit = max || 3;
     var lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
     var out = [];
     for (var i = 0; i < lines.length; i++) {
-      if (out.length >= 3) { break; }
+      if (out.length >= limit) { break; }
       var t = lines[i].trim();
       if (!t || /^```/.test(t)) { continue; }
       t = t.replace(/^[-*•]\s*/, '').replace(/^\d{1,2}\s*[.)]\s*/, '');
@@ -2579,6 +2580,15 @@
     var kept = [];
     for (var g = 0; g < groups.length; g++) {
       if (groups[g].titles.length) { kept.push(groups[g]); }
+    }
+
+    /* 유형 묶음 표시가 없거나 적게 나온 답은 번호만 보고 9개까지 살린다 */
+    var found = countTitles(kept);
+    if (found < 6) {
+      var flat = parseTitles(text, 9);
+      if (flat.length > found) {
+        return [{ key: 'all', label: '✨ 추천 제목', titles: flat }];
+      }
     }
     return kept;
   }

@@ -2041,6 +2041,7 @@
     if (!id) { return; }
     ui.expanded[id] = !ui.expanded[id];
     renderDrafts();
+    renderNaver();
   }
 
   /* ② 글 목록의 초안을 지우지 않고 ③ 대기함에 복사본을 넣는다.
@@ -2331,7 +2332,7 @@
         html += '<figure class="np-photo"><img src="' + escapeHtml(src) + '" alt="' + escapeHtml(sec.head) + '" />' +
           (ai ? '<figcaption class="np-cap">AI 생성 · ' + escapeHtml(ai.model || 'gemini') + '</figcaption>' : '') + '</figure>';
       } else {
-        html += '<div class="np-photo-ph">🖼️ ' + (s + 1) + '번 사진 자리 — 🖼️ 본문 이미지 생성으로 채워요</div>';
+        html += '<div class="np-photo-ph">' + (s + 1) + '번 사진 자리 — 🖼️ 본문 이미지 생성으로 채워요</div>';
       }
 
       for (var k = 0; k < sec.lines.length; k++) {

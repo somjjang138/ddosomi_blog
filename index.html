@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<meta name="description" content="또소미 네이버 블로그 초안 생성기 — 제미나이 무료 API 키로 제목·본문·요약표·이미지 프롬프트를 한 번에" />
+<title>오늘도 또소미 · 블로그 초안 생성기</title>
+<style>
+  :root{
+    --cream:#fdf9f1;
+    --cream-deep:#f7eedd;
+    --blue-50:#eff6fd;
+    --blue-100:#e0ecfa;
+    --blue-200:#c8dcf4;
+    --blue-400:#81a9d6;
+    --blue-600:#4b7cb3;
+    --blue-700:#38608f;
+    --ink:#2b394a;
+    --ink-soft:#5e6e81;
+    --line:#e4e9f0;
+    --white:#ffffff;
+    --mint:#e6f4ec;
+    --yellow:#fff3c9;
+    --red:#c9504c;
+    --red-bg:#fdeceb;
+    --radius:18px;
+    --shadow:0 12px 30px rgba(75,124,179,.10);
+    --shadow-sm:0 4px 14px rgba(75,124,179,.09);
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 560px at 8% -12%, #e9f2fd 0%, rgba(233,242,253,0) 62%),
+      radial-gradient(900px 520px at 102% -6%, #fdf2e0 0%, rgba(253,242,224,0) 58%),
+      var(--cream);
+    background-attachment:fixed;
+    line-height:1.62;
+    -webkit-text-size-adjust:100%;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:1180px;margin:0 auto;padding:22px 16px 56px;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:10px 4px 20px;
+    text-align:left;
+  }
+  .hero-badge{
+    display:inline-block;
+    padding:5px 12px;
+    border-radius:999px;
+    background:var(--white);
+    border:1px solid var(--blue-200);
+    color:var(--blue-700);
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:.2px;
+    box-shadow:var(--shadow-sm);
+  }
+  .hero h1{
+    margin:12px 0 6px;
+    font-size:26px;
+    line-height:1.28;
+    letter-spacing:-.4px;
+  }
+  .hero h1 span{color:var(--blue-600);}
+  .hero p{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+  .hero p b{color:var(--ink);font-weight:700;}
+
+  /* ---------- layout ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:16px;
+    align-items:start;
+  }
+  .col{display:flex;flex-direction:column;gap:16px;min-width:0;}
+
+  .card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+    min-width:0;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .card-head h2{
+    margin:0;
+    font-size:16px;
+    letter-spacing:-.2px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .step{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;height:22px;
+    border-radius:50%;
+    background:var(--blue-100);
+    color:var(--blue-700);
+    font-size:12px;
+    font-weight:800;
+    flex:none;
+  }
+  .pill{
+    flex:none;
+    font-size:11.5px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:999px;
+    background:var(--cream-deep);
+    color:#8a6b34;
+    white-space:nowrap;
+  }
+  .pill.on{background:var(--mint);color:#2f6b4f;}
+  .pill.soft{background:var(--blue-50);color:var(--blue-700);font-weight:600;}
+  .pill:empty{display:none;}
+
+  /* ---------- form ---------- */
+  .field{margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  .field > label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:7px;
+  }
+  .field > label .req{color:var(--blue-600);font-weight:800;margin-left:2px;}
+  .field > label .opt{color:#95a2b2;font-weight:600;font-size:11.5px;margin-left:4px;}
+  input[type=text],input[type=password],textarea,select{
+    width:100%;
+    font:inherit;
+    font-size:16px;
+    color:var(--ink);
+    background:#fcfdff;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    padding:11px 13px;
+    outline:none;
+    transition:border-color .16s, box-shadow .16s, background .16s;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  textarea{resize:vertical;min-height:86px;line-height:1.55;font-size:15px;}
+  input:focus,textarea:focus,select:focus{
+    border-color:var(--blue-400);
+    background:var(--white);
+    box-shadow:0 0 0 4px rgba(129,169,214,.16);
+  }
+  input::placeholder,textarea::placeholder{color:#a9b6c4;}
+  select{
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' fill='none' stroke='%23708ba8' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 13px center;
+    padding-right:36px;
+  }
+  .key-row{display:flex;gap:7px;}
+  .key-row input{flex:1 1 auto;min-width:0;letter-spacing:.3px;}
+  .hint{
+    margin:8px 0 0;
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+  .hint a{color:var(--blue-600);font-weight:700;text-decoration:none;border-bottom:1px solid var(--blue-200);}
+  .hint code{
+    background:var(--blue-50);
+    border-radius:5px;
+    padding:1px 5px;
+    font-size:11.5px;
+    color:var(--blue-700);
+  }
+
+  /* segmented */
+  .seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  .seg-btn{
+    font:inherit;
+    cursor:pointer;
+    text-align:center;
+    padding:10px 6px;
+    border-radius:12px;
+    border:1.5px solid var(--line);
+    background:#fcfdff;
+    color:var(--ink);
+    font-size:14px;
+    font-weight:700;
+    transition:all .16s;
+    line-height:1.35;
+  }
+  .seg-btn small{
+    display:block;
+    font-size:10.5px;
+    font-weight:600;
+    color:#93a1b1;
+    margin-top:2px;
+  }
+  .seg-btn:hover{border-color:var(--blue-200);}
+  .seg-btn.is-on{
+    border-color:var(--blue-400);
+    background:var(--blue-50);
+    box-shadow:inset 0 0 0 1px var(--blue-400);
+  }
+  .seg-btn.is-on small{color:var(--blue-600);}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .chip{
+    font:inherit;
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    padding:5px 11px;
+    border-radius:999px;
+    border:1px dashed var(--blue-200);
+    background:var(--white);
+    color:var(--blue-700);
+    transition:all .15s;
+  }
+  .chip:hover{background:var(--blue-50);border-style:solid;}
+  .chip.hot{border-style:solid;border-color:var(--blue-100);background:var(--blue-50);}
+  .chip.hot:hover{background:var(--blue-100);}
+
+  .label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;}
+  .label-row > label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    margin:0;
+  }
+  .label-row > label .req{color:var(--blue-600);font-weight:800;margin-left:2px;}
+  .label-row .btn.sm{
+    flex:none;
+    font-size:12px;
+    padding:7px 10px;
+    border-radius:10px;
+    background:var(--blue-50);
+    border-color:var(--blue-100);
+    color:var(--blue-700);
+  }
+  .label-row .btn.sm:disabled{opacity:.6;cursor:progress;}
+  .hint.mini{font-size:11.5px;color:#9aa8b7;margin-top:6px;line-height:1.45;}
+
+  /* tone sample */
+  .tone{
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    background:#fcfdff;
+    overflow:hidden;
+  }
+  .tone[open]{background:var(--white);border-color:var(--blue-200);}
+  .tone summary{
+    cursor:pointer;
+    list-style:none;
+    padding:11px 13px;
+    font-size:13px;
+    font-weight:800;
+    color:var(--blue-700);
+    line-height:1.45;
+  }
+  .tone summary::-webkit-details-marker{display:none;}
+  .tone summary::before{content:"＋ ";font-weight:800;}
+  .tone[open] summary::before{content:"－ ";}
+  .tone-sub{display:block;font-size:11.5px;font-weight:600;color:#93a1b1;margin-top:2px;}
+  .tone-body{padding:0 13px 13px;}
+  .tone-body textarea{font-size:16px;min-height:150px;line-height:1.62;}
+  .tone-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;}
+  .tone-count{font-size:11.5px;color:#9aa8b7;font-weight:600;}
+
+  /* buttons */
+  .btn{
+    font:inherit;
+    cursor:pointer;
+    border-radius:12px;
+    border:1.5px solid transparent;
+    padding:10px 15px;
+    font-size:14.5px;
+    font-weight:700;
+    background:var(--blue-100);
+    color:var(--blue-700);
+    transition:transform .12s, background .16s, box-shadow .16s, color .16s;
+    white-space:nowrap;
+    line-height:1.3;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn.ghost{background:var(--white);border-color:var(--line);color:var(--ink-soft);font-weight:600;}
+  .btn.ghost:hover{border-color:var(--blue-200);color:var(--blue-700);}
+  .btn.sm{padding:9px 12px;font-size:13px;border-radius:11px;}
+  .btn.primary{
+    width:100%;
+    padding:15px 18px;
+    font-size:16px;
+    color:#fff;
+    background:linear-gradient(180deg,#5a8dc4 0%,#477ab2 100%);
+    box-shadow:0 8px 18px rgba(71,122,178,.28);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+  }
+  .btn.primary:hover{box-shadow:0 10px 22px rgba(71,122,178,.34);}
+  .btn.primary:disabled{opacity:.62;cursor:progress;box-shadow:none;transform:none;}
+  .btn.copy{
+    width:100%;
+    padding:14px 16px;
+    font-size:15.5px;
+    color:#2a2a2a;
+    background:linear-gradient(180deg,#ffe9a8 0%,#ffdb7d 100%);
+    border:none;
+    box-shadow:0 6px 16px rgba(214,172,58,.28);
+  }
+  .btn.copy:hover{filter:brightness(1.03);}
+  .btn.copy.done{background:linear-gradient(180deg,#bfe8d2 0%,#a2dcbf 100%);box-shadow:0 6px 16px rgba(58,150,108,.24);}
+
+  .spin{
+    width:17px;height:17px;
+    border-radius:50%;
+    border:2.4px solid rgba(255,255,255,.4);
+    border-top-color:#fff;
+    animation:spin .8s linear infinite;
+    display:none;
+    flex:none;
+  }
+  .btn.primary.loading .spin{display:block;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .status{
+    margin:10px 0 0;
+    font-size:12.5px;
+    color:var(--blue-700);
+    text-align:center;
+    font-weight:600;
+    min-height:18px;
+  }
+
+  .error{
+    margin-top:14px;
+    border:1px solid #f4cfcd;
+    background:var(--red-bg);
+    border-radius:12px;
+    padding:12px 14px;
+  }
+  .error b{display:block;font-size:13.5px;color:var(--red);margin-bottom:3px;}
+  .error p{margin:0;font-size:13px;color:#7d4a48;line-height:1.55;}
+  .error .error-hint{margin-top:6px;font-size:12.5px;color:#96605d;}
+
+  /* ---------- output ---------- */
+  .output-card{padding:0;overflow:visible;}
+  .output-card .card-head{padding:18px 18px 0;margin-bottom:12px;}
+  .toolbar{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    padding:0 18px 14px;
+    position:sticky;
+    top:0;
+    z-index:6;
+    background:linear-gradient(180deg,#fff 76%,rgba(255,255,255,0));
+    padding-top:4px;
+    border-radius:var(--radius) var(--radius) 0 0;
+  }
+  .toolbar-sub{display:flex;gap:7px;}
+  .toolbar-sub .btn{flex:1 1 0;}
+  .toolbar.bottom-bar{position:static;padding-top:0;background:none;}
+  .output-body{
+    padding:2px 18px 22px;
+    font-size:15px;
+    line-height:1.7;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+  }
+  .output-body.is-empty{padding:34px 18px 44px;}
+
+  .empty{text-align:center;color:var(--ink-soft);}
+  .empty .empty-emoji{font-size:34px;line-height:1;margin-bottom:10px;}
+  .empty p{margin:0;font-size:14px;}
+  .empty p b{color:var(--blue-700);}
+
+  .output-body h2{
+    margin:26px 0 10px;
+    font-size:16.5px;
+    letter-spacing:-.3px;
+    padding-bottom:7px;
+    border-bottom:2px solid var(--blue-100);
+    color:var(--blue-700);
+  }
+  .output-body h2:first-child{margin-top:6px;}
+  .output-body h3{
+    margin:20px 0 6px;
+    font-size:15.5px;
+    color:var(--ink);
+    letter-spacing:-.2px;
+  }
+  .output-body h3 .h3-num{color:var(--blue-600);margin-right:5px;}
+  .output-body p{margin:0 0 10px;}
+  .output-body strong{background:linear-gradient(transparent 58%, #ffe788 58%);font-weight:800;}
+  .output-body hr{border:none;border-top:1.5px dashed var(--blue-200);margin:26px 0 6px;}
+  .output-body ul{margin:0 0 10px;padding-left:19px;}
+  .output-body li{margin-bottom:4px;}
+
+  .title-cand{
+    display:flex;
+    gap:9px;
+    align-items:flex-start;
+    background:var(--blue-50);
+    border:1px solid var(--blue-100);
+    border-radius:12px;
+    padding:10px 12px;
+    margin:0 0 8px !important;
+    font-size:14.5px;
+    line-height:1.55;
+  }
+  .title-cand .tc-num{
+    flex:none;
+    width:20px;height:20px;
+    border-radius:50%;
+    background:var(--white);
+    color:var(--blue-600);
+    font-size:11.5px;
+    font-weight:800;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:2px;
+  }
+  .numline{display:flex;gap:8px;align-items:baseline;}
+  .numline .nl-num{flex:none;color:var(--blue-600);font-weight:800;}
+  .tagline{color:var(--blue-700);font-weight:600;font-size:14.5px;}
+
+  .table-wrap{overflow-x:auto;margin:0 0 12px;-webkit-overflow-scrolling:touch;}
+  .output-body table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:280px;
+    font-size:13.5px;
+  }
+  .output-body th,.output-body td{
+    border:1px solid #dbe3ec;
+    padding:8px 10px;
+    text-align:center;
+    vertical-align:middle;
+  }
+  .output-body th{background:#f4f6f9;font-weight:800;}
+  .output-body td:first-child{font-weight:700;color:#46556a;background:#fbfcfe;}
+
+  .foot{
+    margin-top:26px;
+    text-align:center;
+    font-size:11.5px;
+    color:#9aa8b7;
+    line-height:1.7;
+    padding:0 8px;
+  }
+
+  /* help */
+  .help{
+    margin-top:18px;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    box-shadow:var(--shadow-sm);
+  }
+  .help summary{
+    cursor:pointer;
+    font-size:13.5px;
+    font-weight:800;
+    color:var(--blue-700);
+    list-style:none;
+  }
+  .help summary::-webkit-details-marker{display:none;}
+  .help summary::before{content:"＋ ";font-weight:800;}
+  .help[open] summary::before{content:"－ ";}
+  .help ol{margin:10px 0 0;padding-left:19px;font-size:13px;color:var(--ink-soft);line-height:1.75;}
+  .help ol b{color:var(--ink);}
+  .help .warn{
+    margin:10px 0 0;
+    font-size:12.5px;
+    color:#8a6b34;
+    background:var(--yellow);
+    border-radius:9px;
+    padding:8px 11px;
+    line-height:1.6;
+  }
+
+  /* toast */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:26px;
+    transform:translate(-50%,16px);
+    background:#2b394a;
+    color:#fff;
+    font-size:13.5px;
+    font-weight:700;
+    padding:11px 18px;
+    border-radius:999px;
+    box-shadow:0 10px 26px rgba(0,0,0,.24);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s, transform .2s;
+    z-index:60;
+    max-width:88vw;
+    text-align:center;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  @media (min-width:980px){
+    .page{padding:30px 26px 64px;}
+    .hero{padding:6px 2px 24px;}
+    .hero h1{font-size:31px;}
+    .hero p{font-size:15px;}
+    .grid{grid-template-columns:minmax(0,0.86fr) minmax(0,1.14fr);gap:20px;}
+    .card{padding:22px;}
+    .output-card .card-head{padding:22px 22px 0;}
+    .toolbar{padding:4px 22px 14px;}
+    .toolbar-sub{max-width:340px;}
+    .toolbar-sub .btn{flex:0 0 auto;}
+    .btn.copy{max-width:100%;}
+    .output-body{padding:2px 22px 26px;}
+    .output-body.is-empty{padding:56px 22px 72px;}
+    .output-body h2{font-size:17.5px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hero">
+    <span class="hero-badge">오늘도 또소미</span>
+    <h1>블로그 <span>초안 생성기</span></h1>
+    <p>주제만 넣으면 <b>내 말투로</b> 제목 3개 · 본문 · 요약표 · 이미지 프롬프트까지 한 번에 뽑아요.</p>
+  </header>
+
+  <main class="grid">
+    <div class="col">
+
+      <!-- 1. 키 설정 -->
+      <section class="card" aria-labelledby="t1">
+        <div class="card-head">
+          <h2 id="t1"><span class="step">1</span> 제미나이 키 설정</h2>
+          <span class="pill" id="keyPill">키 없음</span>
+        </div>
+
+        <div class="field">
+          <label for="apiKey">API 키</label>
+          <div class="key-row">
+            <input id="apiKey" type="password" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza..." aria-describedby="keyHint" />
+            <button id="toggleKey" class="btn ghost sm" type="button" aria-pressed="false">보기</button>
+            <button id="clearKey" class="btn ghost sm" type="button">초기화</button>
+          </div>
+          <p class="hint" id="keyHint">발급: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio (aistudio.google.com)</a> → Get API key (무료)</p>
+        </div>
+
+        <div class="field">
+          <label for="model">모델</label>
+          <select id="model">
+            <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite · 추천 (무료 한도 넉넉)</option>
+            <option value="gemini-3.8-flash">gemini-3.8-flash · 더 똑똑 (한도 적음)</option>
+            <option value="gemini-2.5-flash">gemini-2.5-flash · 예전 모델 (새 키는 안 열릴 수 있어요)</option>
+          </select>
+          <p class="hint">키는 이 브라우저에만 저장되고, 구글 API 호출에만 쓰여요.</p>
+        </div>
+      </section>
+
+      <!-- 2. 글감 -->
+      <section class="card" aria-labelledby="t2">
+        <div class="card-head">
+          <h2 id="t2"><span class="step">2</span> 글감 넣기</h2>
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="topic">주제 <span class="req">*</span></label>
+            <button id="hotBtn" class="btn ghost sm" type="button"><span class="hot-label">🔄 핫한 주제 5개 불러오기</span></button>
+          </div>
+          <input id="topic" type="text" placeholder="예: 수험표 할인 총정리 / 11월 코스트코 겨울템" autocomplete="off" />
+          <div class="chips" id="chips">
+            <button class="chip" type="button" data-topic="수험표 할인 총정리">수험표 할인 총정리</button>
+            <button class="chip" type="button" data-topic="11월 코스트코 겨울템">11월 코스트코 겨울템</button>
+            <button class="chip" type="button" data-topic="겨울 가습기 관리법">겨울 가습기 관리법</button>
+          </div>
+          <p class="hint mini">오늘 날짜 기준 시즌·생활 꿀팁 주제 5개를 추천해요 (실시간 웹 검색은 무료 키 제한으로 미지원)</p>
+        </div>
+
+        <div class="field">
+          <label id="countLabel">소제목 / 사진 수</label>
+          <div class="seg" role="radiogroup" aria-labelledby="countLabel">
+            <button class="seg-btn" type="button" role="radio" aria-checked="false" data-count="3">3개<small>가볍게</small></button>
+            <button class="seg-btn" type="button" role="radio" aria-checked="false" data-count="4">4개<small>균형</small></button>
+            <button class="seg-btn is-on" type="button" role="radio" aria-checked="true" data-count="5">5개<small>표준</small></button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="memo">최신 정보 / 참고 메모 <span class="opt">선택</span></label>
+          <textarea id="memo" placeholder="날짜 · 가격 · 할인율 · 링크 메모를 붙여넣으면 그대로 반영해요.&#10;예) 11/18 기준 코스트코 6,310원, 21,590원 / 쿠팡 15,900원"></textarea>
+        </div>
+
+        <div class="field">
+          <details class="tone" id="toneBox">
+            <summary>✍️ 내 말투 예시<span class="tone-sub">(여기에 내가 쓴 글 붙여넣으면 그대로 따라 써요)</span></summary>
+            <div class="tone-body">
+              <textarea id="toneSample" spellcheck="false" aria-label="내 말투 예시" placeholder="내가 쓴 블로그 글 아무 문단이나 붙여넣어 주세요. 이 말투 그대로 초안을 써요."></textarea>
+              <div class="tone-foot">
+                <span class="tone-count" id="toneCount"></span>
+                <button id="resetTone" class="btn ghost sm" type="button">기본 예시로 되돌리기</button>
+              </div>
+              <p class="hint mini">여기 적은 말끝·호흡·감정 표현을 그대로 따라 써요. 비워두면 기본 예시로 써요.</p>
+            </div>
+          </details>
+        </div>
+
+        <button id="generateBtn" class="btn primary" type="button">
+          <span class="spin" aria-hidden="true"></span>
+          <span class="btn-label">✍️ 초안 생성하기</span>
+        </button>
+        <p class="status" id="statusText" hidden></p>
+
+        <div class="error" id="errorBox" hidden>
+          <b id="errorTitle">문제가 생겼어요</b>
+          <p id="errorMsg"></p>
+          <p class="error-hint" id="errorHint"></p>
+        </div>
+      </section>
+    </div>
+
+    <!-- 3. 결과 -->
+    <section class="card output-card" aria-labelledby="t3">
+      <div class="card-head">
+        <h2 id="t3"><span class="step">3</span> 초안 결과</h2>
+        <span class="pill soft" id="metaPill"></span>
+      </div>
+
+      <div class="toolbar" id="toolbarTop" hidden>
+        <button class="btn copy" type="button" data-copy="all">📋 전체 복사 (피클에게 보내기)</button>
+        <div class="toolbar-sub">
+          <button class="btn ghost sm" type="button" data-copy="body">본문만</button>
+          <button class="btn ghost sm" type="button" data-copy="images">이미지 프롬프트만</button>
+        </div>
+      </div>
+
+      <div class="output-body is-empty" id="outputBody">
+        <div class="empty">
+          <div class="empty-emoji">📝</div>
+          <p>주제만 넣고 <b>초안 생성하기</b>를 누르면<br>제목 3개부터 이미지 프롬프트까지 한 번에 나와요.</p>
+        </div>
+      </div>
+
+      <div class="toolbar bottom-bar" id="toolbarBottom" hidden>
+        <button class="btn copy" type="button" data-copy="all">📋 전체 복사 (피클에게 보내기)</button>
+        <div class="toolbar-sub">
+          <button class="btn ghost sm" type="button" id="clearResult">결과 지우기</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <details class="help">
+    <summary>처음 한 번만 하면 되는 3단계</summary>
+    <ol>
+      <li><b>키 발급</b> — aistudio.google.com 접속 → 구글 로그인 → <b>Get API key</b> → 키 만들기 → 복사</li>
+      <li><b>키 붙여넣기</b> — 위 1번 칸에 붙여넣으면 이 브라우저에 자동 저장돼요 (다음부터는 안 넣어도 됨)</li>
+      <li><b>주제만 입력</b> → 초안 생성하기 → 다 나오면 <b>📋 전체 복사</b> → 피클 채팅창에 그대로 붙여넣기</li>
+    </ol>
+    <p class="warn">사진 파일은 여기서 만들어지지 않아요. 맨 아래 <b>이미지 프롬프트</b>를 복사해서 제미나이나 피클에게 넘기면 돼요.</p>
+    <p class="hint">💡 <b>🔄 핫한 주제 5개</b>는 오늘 날짜로 지금 시즌 주제를 뽑아 줘요(웹 검색이 아니라 모델의 시즌 감각이라 가격·일정은 메모에 적어 주세요). <b>✍️ 내 말투 예시</b>는 한 번 붙여두면 그 말투 그대로 계속 써요.</p>
+  </details>
+
+  <p class="foot">키·말투 예시·오늘의 추천 주제는 이 브라우저(localStorage)에만 저장돼요 · AI 초안은 사실과 다를 수 있으니 가격·날짜는 한 번만 확인하고 발행해 주세요</p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------
+     저장소
+  ------------------------------------------------------------------ */
+  var LS_KEY = 'ttosomi.apiKey';
+  var LS_MODEL = 'ttosomi.model';
+  var LS_COUNT = 'ttosomi.count';
+  var LS_RESULT = 'ttosomi.result';
+  var LS_TONE = 'ttosomi.tone';
+  var LS_HOT = 'ttosomi.hotTopics';
+
+  var store = {
+    get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} },
+    del: function (k) { try { window.localStorage.removeItem(k); } catch (e) {} }
+  };
+
+  /* ------------------------------------------------------------------
+     엘리먼트
+  ------------------------------------------------------------------ */
+  var $ = function (id) { return document.getElementById(id); };
+
+  var apiKeyEl = $('apiKey');
+  var toggleKeyEl = $('toggleKey');
+  var clearKeyEl = $('clearKey');
+  var keyPill = $('keyPill');
+  var modelEl = $('model');
+  var topicEl = $('topic');
+  var memoEl = $('memo');
+  var chipsEl = $('chips');
+  var hotBtn = $('hotBtn');
+  var hotBtnLabel = hotBtn.querySelector('.hot-label');
+  var toneEl = $('toneSample');
+  var toneCountEl = $('toneCount');
+  var resetToneBtn = $('resetTone');
+  var segBtns = Array.prototype.slice.call(document.querySelectorAll('.seg-btn'));
+  var generateBtn = $('generateBtn');
+  var btnLabel = generateBtn.querySelector('.btn-label');
+  var statusText = $('statusText');
+  var errorBox = $('errorBox');
+  var errorTitle = $('errorTitle');
+  var errorMsg = $('errorMsg');
+  var errorHint = $('errorHint');
+  var outputBody = $('outputBody');
+  var toolbarTop = $('toolbarTop');
+  var toolbarBottom = $('toolbarBottom');
+  var metaPill = $('metaPill');
+  var clearResultBtn = $('clearResult');
+  var toastEl = $('toast');
+
+  var currentText = '';
+  var count = 5;
+  var busy = false;
+  var hotBusy = false;
+
+  var DEFAULT_TONE = [
+    '요즘 날씨 진짜 확 추워졌죠? 저도 아침에 이불 밖으로 나오기가 너무 싫더라고요 ㅠㅠ',
+    '그래서 어제 코스트코 갔다가 겨울템 쫙 훑고 왔는데, **지금 세일 들어간 거** 보자마자 바로 카트에 담았잖아요!',
+    '솔직히 정가 주고 사면 살짝 아까운데, 이번 주 할인 폭이 꽤 커서 지금 쟁여두시면 겨울 내내 든든할 거예요 🙌'
+  ].join('\n');
+
+  /* ------------------------------------------------------------------
+     공통 유틸
+  ------------------------------------------------------------------ */
+  var toastTimer = null;
+  function toast(message) {
+    toastEl.textContent = message;
+    toastEl.classList.add('show');
+    if (toastTimer) { clearTimeout(toastTimer); }
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1900);
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function inlineMd(s) {
+    return escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
+
+  function todayKorean() {
+    var d = new Date();
+    return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' +
+      ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일)';
+  }
+
+  function todayKey() {
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  function stampNow() {
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  /* ------------------------------------------------------------------
+     마크다운 → 보기 좋은 HTML
+  ------------------------------------------------------------------ */
+  function renderMarkdown(md) {
+    var lines = String(md).replace(/\r\n/g, '\n').split('\n');
+    var out = [];
+    var section = '';
+    var i = 0;
+
+    var isRow = function (l) { return /^\s*\|.*\|\s*$/.test(l); };
+    var isSep = function (l) { return /^\s*\|[\s:\-|]+\|\s*$/.test(l); };
+    var cells = function (r) {
+      return r.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return c.trim(); });
+    };
+
+    while (i < lines.length) {
+      var line = lines[i];
+      var trimmed = line.trim();
+
+      if (!trimmed) { i++; continue; }
+
+      if (/^-{3,}$/.test(trimmed)) { out.push('<hr />'); i++; continue; }
+
+      var hm = trimmed.match(/^(#{1,6})\s+(.*)$/);
+      if (hm) {
+        var level = Math.min(hm[1].length + 1, 6);
+        var title = hm[2];
+        section = title;
+        out.push('<h' + level + '>' + inlineMd(title) + '</h' + level + '>');
+        i++;
+        continue;
+      }
+
+      if (isRow(line) && i + 1 < lines.length && isSep(lines[i + 1])) {
+        var head = cells(line);
+        i += 2;
+        var bodyRows = [];
+        while (i < lines.length && isRow(lines[i])) { bodyRows.push(cells(lines[i])); i++; }
+        var html = '<div class="table-wrap"><table><thead><tr>';
+        for (var h = 0; h < head.length; h++) { html += '<th>' + inlineMd(head[h]) + '</th>'; }
+        html += '</tr></thead><tbody>';
+        for (var r = 0; r < bodyRows.length; r++) {
+          html += '<tr>';
+          for (var c = 0; c < bodyRows[r].length; c++) { html += '<td>' + inlineMd(bodyRows[r][c]) + '</td>'; }
+          html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+        out.push(html);
+        continue;
+      }
+
+      if (/^[-*•]\s+/.test(trimmed)) {
+        var items = [];
+        while (i < lines.length && /^[-*•]\s+/.test(lines[i].trim())) {
+          items.push('<li>' + inlineMd(lines[i].trim().replace(/^[-*•]\s+/, '')) + '</li>');
+          i++;
+        }
+        out.push('<ul>' + items.join('') + '</ul>');
+        continue;
+      }
+
+      var nm = trimmed.match(/^(\d{1,2})[.)]\s+(.*)$/);
+      if (nm) {
+        var num = nm[1];
+        var rest = nm[2];
+        if (section.indexOf('제목') >= 0) {
+          out.push('<p class="title-cand"><span class="tc-num">' + escapeHtml(num) + '</span><span>' + inlineMd(rest) + '</span></p>');
+        } else if (rest.length <= 42 && section.indexOf('이미지') < 0) {
+          out.push('<h3><span class="h3-num">' + escapeHtml(num) + '.</span>' + inlineMd(rest) + '</h3>');
+        } else {
+          out.push('<p class="numline"><span class="nl-num">' + escapeHtml(num) + '.</span><span>' + inlineMd(rest) + '</span></p>');
+        }
+        i++;
+        continue;
+      }
+
+      if (/^#[^\s#]/.test(trimmed)) {
+        out.push('<p class="tagline">' + inlineMd(trimmed) + '</p>');
+        i++;
+        continue;
+      }
+
+      out.push('<p>' + inlineMd(trimmed) + '</p>');
+      i++;
+    }
+
+    return out.join('\n');
+  }
+
+  /* ------------------------------------------------------------------
+     복사
+  ------------------------------------------------------------------ */
+  function legacyCopy(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', 'readonly');
+      ta.style.position = 'fixed';
+      ta.style.top = '0';
+      ta.style.left = '0';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(function () { return true; }).catch(function () {
+        return legacyCopy(text);
+      });
+    }
+    return Promise.resolve(legacyCopy(text));
+  }
+
+  function sliceSection(text, startRe, endRe) {
+    var lines = String(text).replace(/\r\n/g, '\n').split('\n');
+    var start = -1;
+    var end = lines.length;
+    for (var i = 0; i < lines.length; i++) {
+      if (start < 0 && startRe.test(lines[i].trim())) { start = i; continue; }
+      if (start >= 0 && endRe && endRe.test(lines[i].trim())) { end = i; break; }
+    }
+    if (start < 0) { return ''; }
+    return lines.slice(start, end).join('\n').replace(/^\s*-{3,}\s*$/gm, '').trim();
+  }
+
+  function textFor(kind) {
+    if (!currentText) { return ''; }
+    if (kind === 'body') {
+      var body = sliceSection(currentText, /^#{0,6}\s*본문\s*$/, /^#{0,6}\s*이미지\s*프롬프트/);
+      return body || currentText;
+    }
+    if (kind === 'images') {
+      var img = sliceSection(currentText, /^#{0,6}\s*이미지\s*프롬프트/, null);
+      return img || currentText;
+    }
+    return currentText;
+  }
+
+  function handleCopy(kind, btn) {
+    var text = textFor(kind);
+    if (!text) { toast('복사할 내용이 없어요'); return; }
+    copyText(text).then(function (ok) {
+      if (!ok) { toast('복사가 안 됐어요. 길게 눌러 직접 복사해 주세요'); return; }
+      toast('복사 완료! 피클 채팅창에 붙여넣어 주세요');
+      if (btn) {
+        var original = btn.getAttribute('data-label') || btn.innerHTML;
+        btn.setAttribute('data-label', original);
+        btn.classList.add('done');
+        btn.innerHTML = '✅ 복사 완료!';
+        setTimeout(function () {
+          btn.classList.remove('done');
+          btn.innerHTML = original;
+        }, 1700);
+      }
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var target = e.target.closest ? e.target.closest('[data-copy]') : null;
+    if (!target) { return; }
+    e.preventDefault();
+    handleCopy(target.getAttribute('data-copy'), target);
+  });
+
+  /* ------------------------------------------------------------------
+     화면 상태
+  ------------------------------------------------------------------ */
+  function refreshKeyPill() {
+    var v = (apiKeyEl.value || '').trim();
+    keyPill.textContent = v ? '키 저장됨' : '키 없음';
+    keyPill.className = v ? 'pill on' : 'pill';
+  }
+
+  function setLoading(on) {
+    busy = on;
+    generateBtn.disabled = on;
+    generateBtn.classList.toggle('loading', on);
+    btnLabel.textContent = on ? '초안 쓰는 중…' : '✍️ 초안 생성하기';
+    if (!on) {
+      statusText.hidden = true;
+      statusText.textContent = '';
+      if (spinTimer) { clearInterval(spinTimer); spinTimer = null; }
+    }
+  }
+
+  var spinTimer = null;
+  var spinSteps = ['제목 후보 뽑는 중…', '본문 쓰는 중…', '요약표 정리 중…', '이미지 프롬프트 만드는 중…'];
+  function startStatus() {
+    var started = Date.now();
+    var idx = 0;
+    statusText.hidden = false;
+    var tick = function () {
+      var sec = Math.round((Date.now() - started) / 1000);
+      statusText.textContent = spinSteps[idx % spinSteps.length] + ' (' + sec + '초)';
+      if (sec > 0 && sec % 6 === 0) { idx++; }
+    };
+    tick();
+    spinTimer = setInterval(tick, 1000);
+  }
+
+  function showError(title, msg, hint) {
+    errorTitle.textContent = title;
+    errorMsg.textContent = msg || '';
+    errorHint.textContent = hint || '';
+    errorHint.hidden = !hint;
+    errorBox.hidden = false;
+  }
+
+  function hideError() { errorBox.hidden = true; }
+
+  function applyCount(n) {
+    count = n;
+    segBtns.forEach(function (b) {
+      var on = parseInt(b.getAttribute('data-count'), 10) === n;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+
+  function showResult(text, meta) {
+    currentText = text;
+    outputBody.classList.remove('is-empty');
+    outputBody.innerHTML = renderMarkdown(text);
+    toolbarTop.hidden = false;
+    toolbarBottom.hidden = false;
+    if (meta) { metaPill.textContent = meta; }
+    window.scrollTo({ top: outputBody.getBoundingClientRect().top + window.pageYOffset - 70, behavior: 'smooth' });
+  }
+
+  function clearResult() {
+    currentText = '';
+    store.del(LS_RESULT);
+    metaPill.textContent = '';
+    toolbarTop.hidden = true;
+    toolbarBottom.hidden = true;
+    outputBody.classList.add('is-empty');
+    outputBody.innerHTML = '<div class="empty"><div class="empty-emoji">📝</div><p>주제만 넣고 <b>초안 생성하기</b>를 누르면<br>제목 3개부터 이미지 프롬프트까지 한 번에 나와요.</p></div>';
+    hideError();
+  }
+
+  /* ------------------------------------------------------------------
+     프롬프트
+  ------------------------------------------------------------------ */
+  var SYSTEM_PROMPT = [
+    "너는 네이버 블로그 '오늘도 또소미 : 쓸모 있는 꿀팁'(살림·생활꿀팁 / 쇼핑·할인·리뷰 / 여행·나들이)에 올릴 글을 쓰는 라이프 에디터다. 아래 규칙을 한 줄도 어기지 말고 그대로 지켜라.",
+    '',
+    '[말투 — 이 글에서 가장 중요하다]',
+    '- 30대 주부이자 생활 블로거가 이웃에게 카톡으로 꿀팁 알려주듯 쓴다. 밝고 당차고 친근한 톤.',
+    "- 딱딱한 정보 설명투('~입니다', '~할 수 있습니다', '~알아보겠습니다', '~에 대해 알아보겠습니다')는 절대 쓰지 않는다.",
+    "- 짧고 경쾌한 구어체(해요체)를 쓴다: '~해요', '~거든요', '~더라고요', '~잖아요!', '~해 봤어요', '~인 것 같아요'.",
+    "- 가벼운 'ㅋㅋ'나 이모지(🙌, ㅠㅠ, 😊)를 글 전체에서 한두 개만 넣어 숨을 풀어 준다.",
+    '- 문장은 1~2줄로 짧게 끊고, 한 문장에 정보는 하나만 담는다. 줄바꿈으로 끊어쓰기 호흡을 만든다.',
+    "- '진짜', '솔직히', '대박', '완전' 같은 입말 감탄은 살리되, 사실을 부풀리는 과장(무조건·역대급·최고·완벽)은 쓰지 않는다.",
+    '- 직접 겪고 써 본 사람처럼 1인칭 생활자 시점으로 쓴다.',
+    "- 도입부와 마무리에 '또소미에요' 같은 닉네임 인사, '안녕하세요', '오늘은 ~알아볼게요' 같은 인사말·자기소개·블로그 상투어를 절대 쓰지 않는다.",
+    "- '여러분' 같은 방송 말투 호칭은 쓰지 않는다.",
+    '- 출처 표기(출처:, 참고:, 링크 나열, 각주)를 넣지 않는다.',
+    '',
+    '[사실성]',
+    "- '참고 메모'에 적힌 날짜·가격·할인율·스펙만 사실로 쓴다.",
+    "- 메모에 없는 구체적 수치·가격·기간은 절대 지어내지 않는다. 꼭 필요하면 '[확인 필요]'라고만 적는다.",
+    "- '무조건', '역대급', '최고' 같은 과장·단정 표현을 쓰지 않는다.",
+    '',
+    '[출력 형식]',
+    '아래 뼈대의 순서와 표기를 그대로 지켜 마크다운으로만 출력한다. 인사말이나 설명을 덧붙이지 않고, 마크다운 코드블록으로 감싸지도 않는다. 소제목은 1.부터 번호를 붙인다.',
+    '',
+    '## 제목 후보',
+    '1. "..."',
+    '2. "..."',
+    '3. "..."',
+    '',
+    '## 본문',
+    '',
+    '(도입부: 3초 안에 결론이 보이는 2~3줄)',
+    '',
+    '1. 소제목',
+    '(본문 2~3줄. 핵심 가격·스펙 1문장은 **볼드**로 강조)',
+    '',
+    '2. 소제목',
+    '(본문 2~3줄)',
+    '',
+    '## 요약표',
+    '| 구분 | 내용 |',
+    '| --- | --- |',
+    '| 항목 | 핵심 정보 |',
+    '',
+    '## 마무리',
+    '(2줄)',
+    '',
+    '## 해시태그',
+    '#태그1 #태그2 (정확히 10개)',
+    '',
+    '---',
+    '## 이미지 프롬프트',
+    '1. (본문 1번 소제목에 넣을 사진 설명, 영어 1문단)',
+    '',
+    '## 썸네일 프롬프트',
+    '(영어 1문단)',
+    '',
+    '[제목 후보 규칙]',
+    "- 3개 모두 '홈판 노출형'이다. 1인칭 속마음 대사(\"...\")로 시작하고, 뒤에 반전되는 결과나 구체적 수치를 붙인다.",
+    '- 예: "반값인 줄 알고 갔더니" 코스트코 11월 셋째 주 6,310원짜리 6종',
+    '- 따옴표까지 포함해 33자 이내. 3개는 서로 다른 각도(가격 반전 / 시간·수고 절약 / 실패·후회 반전)로 쓴다.',
+    '- 실제 내용과 맞지 않는 숫자·과장을 넣지 않는다.',
+    '',
+    '[본문 규칙]',
+    '- 도입부는 첫 줄이 계절·상활 인사(예: "요즘 날씨 진짜 확 추워졌죠?")로 시작해도 된다. 단 두세 줄 안에 결론(얼마 아꼈는지, 무엇이 좋은지)이 반드시 나온다.',
+    "- '안녕하세요', '오늘은 ~알아볼게요' 같은 인사말·자기소개·서론은 금지한다.",
+    '- 소제목은 요청받은 개수와 정확히 같아야 하고, 짧은 명사형(15자 이내)으로 쓴다.',
+    '- 각 소제목 아래 본문은 2~3줄. 그중 핵심 가격·스펙 문장 1개에만 볼드를 쓴다.',
+    '- 소제목 번호와 순서가 곧 사진 순서다. 1번 소제목 내용과 1번 이미지 프롬프트 대상이 같아야 한다.',
+    '',
+    '[요약표 규칙]',
+    '- 정확히 2열(| 구분 | 내용 |), 3~6행. 표 아래에 다른 설명을 붙이지 않는다.',
+    '- 셀 값은 짧게(숫자·한 단어 위주) 쓴다.',
+    '',
+    '[마무리 규칙]',
+    "- 딱 2줄. 마지막 줄은 '이번 주말', '11월 안에'처럼 시의성 있는 한마디로 끝낸다.",
+    "- 이웃 추가·댓글 유도 같은 멘트는 넣지 않는다.",
+    '',
+    '[해시태그 규칙]',
+    "- 정확히 10개, 띄어쓰기로 구분, 각각 #을 붙이고 2~8자. 주제·상황·지역 키워드를 섞는다.",
+    '',
+    '[이미지 프롬프트 규칙]',
+    '- 본문 소제목 개수와 같은 수만큼 쓴다. 각각 영어 1문단(2~3문장).',
+    '- 실제 한국 가정·매장 분위기의 square 1:1 editorial lifestyle photo, 자연광, 소품 배치, 고화질 실사로 묘사한다.',
+    '- 텍스트·로고·워터마크·얼굴 클로즈업은 넣지 않는다.',
+    '- 각 프롬프트 맨 앞에 번호를 붙이고, 어떤 소제목용 사진인지 영어로 한 줄 표시한다.',
+    '',
+    '[썸네일 프롬프트 규칙]',
+    '- 영어 1문단. 1:1 정사각형이고, 위쪽 35%는 깨끗한 아이보리 여백으로 비워 그 안에 한글 타이틀을 넣는다.',
+    '- 타이틀은 둥근 산세리프 한글 2줄, 화면 중앙 정렬. 제목 후보 1번을 짧게 다듬어 정확히 두 줄로 만든다.',
+    '- 영어 프롬프트 안에 그 한글 문구를 따옴표로 그대로 적는다(예: two-line Korean headline reading "...").',
+    '- 각진 고딕체·손글씨체·그림자·과한 장식·가격 배지는 쓰지 않는다.'
+  ].join('\n');
+
+  function currentTone() {
+    var v = (toneEl.value || '').trim();
+    return v || DEFAULT_TONE;
+  }
+
+  function toneBlock(tone) {
+    var sample = String(tone || '').trim() || DEFAULT_TONE;
+    return [
+      '',
+      '[내 말투 샘플 — 이 글의 목소리는 여기서 나온다]',
+      '[[사용자 실제 말투 예시 - 이 어미, 호흡, 감정 표현을 반드시 그대로 모방할 것]]',
+      '"""',
+      sample,
+      '"""',
+      '- 위 말투 예시의 문장 길이, 어미(~거든요, ~더라고요, ~잖아요), 감정 표현, 끊어쓰기 리듬을 100% 그대로 따라 쓴다.',
+      '- 예시를 더 매끈하거나 딱딱한 문체로 바꾸지 않는다. 예시에 나온 제품·가격·상황만 이 글 소재로 바꾸고, 말투는 그대로 가져온다.',
+      '- 위 예시와 [말투] 규칙이 부딪히면 위 예시를 따른다.'
+    ].join('\n');
+  }
+
+  function buildSystemPrompt(tone) {
+    return SYSTEM_PROMPT + '\n' + toneBlock(tone);
+  }
+
+  /* ------------------------------------------------------------------
+     핫한 주제 5개 (일반 generateContent — 검색 도구 없이 날짜만 전달)
+  ------------------------------------------------------------------ */
+  var HOT_SYSTEM = [
+    "너는 네이버 블로그 '오늘도 또소미 : 쓸모 있는 꿀팁'(살림·생활꿀팁 / 쇼핑·할인·리뷰 / 여행·나들이)의 주제 기획자다. 사용자가 준 오늘 날짜를 기준으로, 지금 시기·계절·생활 트렌드에 맞고 네이버 홈판(모바일 홈) 유입이 잘 될 만한 블로그 주제 5개를 뽑아라.",
+    '',
+    '[조건]',
+    "- 정확히 5줄. 각 줄은 '1) 주제'처럼 번호를 붙이고 주제만 쓴다. 설명·이유·따옴표·마침표·이모지는 쓰지 않는다.",
+    '- 주제는 25자 이내의 한국어 명사형이고, 사람들이 실제로 검색할 키워드를 넣는다.',
+    '- 5개는 서로 다른 각도로 겹치지 않게 뽑는다: 계절 살림 / 쇼핑·할인 / 육아·아이 / 건강·계절 질환 / 연말·행사·나들이 중에서 고른다.',
+    '- 지금 날짜의 계절감을 반영한다(예: 11월 하순이면 김장·수능·연말·한파·크리스마스·연말정산 준비).',
+    '- 연예 가십·정치·시사·사회 논쟁거리는 넣지 않는다.',
+    '- 구체적 가격·할인율·판매처는 단정하지 않는다. 시즌 감각과 키워드만 담는다.',
+    '- 출력은 5줄만. 인사말·설명·머리말·빈 줄을 넣지 않는다.'
+  ].join('\n');
+
+  function buildHotPrompt() {
+    return [
+      '오늘 날짜: ' + todayKorean(),
+      '',
+      '이 날짜 기준으로 지금 뜰 만한 주제 5개를 위 조건대로 뽑아 줘.'
+    ].join('\n');
+  }
+
+  function parseHotTopics(text) {
+    var lines = String(text).replace(/\r\n/g, '\n').split('\n');
+    var out = [];
+    for (var i = 0; i < lines.length; i++) {
+      if (out.length >= 5) { break; }
+      var t = lines[i].trim();
+      if (!t || /^```/.test(t)) { continue; }
+      t = t.replace(/^[-*•]\s*/, '').replace(/^\d{1,2}\s*[.)]\s*/, '');
+      t = t.replace(/^\*+|\*+$/g, '').trim();
+      t = t.replace(/^["'“”]+|["'“”]+$/g, '').trim();
+      t = t.split(' — ')[0].split(' - ')[0];
+      t = t.replace(/\s*\([^)]*\)\s*$/, '').trim();
+      if (t.length < 4 || t.length > 40) { continue; }
+      out.push(t);
+    }
+    return out;
+  }
+
+  function renderHotChips(topics) {
+    var html = '';
+    for (var i = 0; i < topics.length; i++) {
+      html += '<button class="chip hot" type="button" data-topic="' + escapeHtml(topics[i]) + '">' +
+        escapeHtml(topics[i]) + '</button>';
+    }
+    chipsEl.innerHTML = html;
+  }
+
+  function setHotLoading(on) {
+    hotBusy = on;
+    hotBtn.disabled = on;
+    hotBtnLabel.textContent = on ? '불러오는 중…' : '🔄 핫한 주제 5개 불러오기';
+  }
+
+  function loadHotTopics() {
+    if (hotBusy) { return; }
+    hideError();
+
+    var key = (apiKeyEl.value || '').trim();
+    if (!key) {
+      showError('API 키가 없어요', '위 1번 칸에 제미나이 API 키를 넣으면 오늘 뜰 주제를 뽑아 올 수 있어요.', 'aistudio.google.com → Get API key 에서 무료로 발급받을 수 있어요.');
+      apiKeyEl.focus();
+      return;
+    }
+
+    var model = modelEl.value;
+    store.set(LS_KEY, key);
+
+    var payload = {
+      systemInstruction: { role: 'system', parts: [{ text: HOT_SYSTEM }] },
+      contents: [{ role: 'user', parts: [{ text: buildHotPrompt() }] }],
+      generationConfig: { temperature: 0.95, topP: 0.95, maxOutputTokens: 800 }
+    };
+
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () { controller.abort(); }, 60000);
+    var finish = function () {
+      clearTimeout(timeoutId);
+      setHotLoading(false);
+    };
+
+    setHotLoading(true);
+
+    fetch(ENDPOINT + encodeURIComponent(model) + ':generateContent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': key
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    }).then(function (res) {
+      return res.text().then(function (raw) { return { res: res, raw: raw }; });
+    }).then(function (r) {
+      var data = null;
+      try { data = JSON.parse(r.raw); } catch (e) { data = null; }
+      if (!r.res.ok) {
+        var info = describeError(r.res.status, data);
+        showError(info.title, info.msg, info.hint);
+        return;
+      }
+      var topics = parseHotTopics(extractText(data));
+      if (!topics.length) {
+        showError('주제를 못 받았어요', '다시 한 번 눌러 주세요. 계속 비어 있으면 모델을 바꿔 보세요.', '');
+        return;
+      }
+      renderHotChips(topics);
+      store.set(LS_HOT, JSON.stringify({ date: todayKey(), topics: topics }));
+      toast('오늘 뜰 주제 ' + topics.length + '개를 불러왔어요');
+    }).then(finish, function (err) {
+      if (err && err.name === 'AbortError') {
+        showError('주제를 못 불러왔어요', '시간이 너무 오래 걸려서 멈췄어요. 같은 버튼을 다시 눌러 주세요.', '');
+      } else {
+        showError('연결에 실패했어요', '인터넷 연결을 확인해 주세요.', 'PC 크롬이나 사파리에서 이 파일을 열어 다시 시도해 보세요.');
+      }
+      finish();
+    });
+  }
+
+  function refreshToneCount() {
+    var n = (toneEl.value || '').trim().length;
+    toneCountEl.textContent = n ? n.toLocaleString() + '자' : '기본 예시 사용 중';
+  }
+
+  function buildUserPrompt(topic, n, memo) {
+    var lines = [];
+    lines.push('주제: ' + topic);
+    lines.push('소제목·사진 개수: ' + n + '개');
+    lines.push('오늘 날짜: ' + todayKorean());
+    if (memo) {
+      lines.push('참고 메모(사실로 반영):');
+      lines.push(memo);
+    } else {
+      lines.push('참고 메모: 없음 → 구체적 가격·날짜·수치는 지어내지 말고 [확인 필요]로 표시');
+    }
+    lines.push('');
+    lines.push('위 형식 그대로, 소제목 ' + n + '개와 이미지 프롬프트 ' + n + '개 + 썸네일 프롬프트 1개를 만들어 줘.');
+    return lines.join('\n');
+  }
+
+  /* ------------------------------------------------------------------
+     에러 문구
+  ------------------------------------------------------------------ */
+  function describeError(status, data) {
+    var apiMsg = (data && data.error && data.error.message) || '';
+    var apiStatus = (data && data.error && data.error.status) || '';
+    var low = (apiMsg + ' ' + apiStatus).toLowerCase();
+
+    if (status === 429) {
+      return {
+        title: '오늘 무료 한도를 다 썼어요',
+        msg: '같은 키로는 지금 더 못 불러와요. 한도는 모델마다 따로 잡히니 위에서 모델을 바꾸면 이어서 쓸 수 있어요.',
+        hint: '무료 한도는 한국 시간 오후 5시쯤(태평양 자정)에 다시 채워져요.'
+      };
+    }
+    if (status === 401 || status === 403) {
+      return {
+        title: '이 키로는 쓸 수 없어요',
+        msg: '키가 지워졌거나, 프로젝트에서 Gemini API 사용이 꺼져 있을 수 있어요.',
+        hint: 'AI Studio에서 새 키를 만들어 다시 넣어 주세요.'
+      };
+    }
+    if (status === 404) {
+      return {
+        title: '선택한 모델을 쓸 수 없어요',
+        msg: '이 키에서는 그 모델이 열려 있지 않아요.',
+        hint: '모델을 gemini-3.5-flash-lite로 바꿔서 다시 시도해 주세요.'
+      };
+    }
+    if (status === 400) {
+      if (/key|api_key|api key/.test(low)) {
+        return {
+          title: 'API 키가 올바르지 않아요',
+          msg: '키를 다시 복사해서 붙여넣어 주세요. 앞뒤 공백이나 빠진 글자가 없는지 확인해 주세요.',
+          hint: 'AI Studio에서 만든 키인지도 한 번 봐 주세요.'
+        };
+      }
+      if (/safety|blocked|prohibit/.test(low)) {
+        return {
+          title: '이 주제는 답을 만들 수 없어요',
+          msg: '표현이 걸린 것 같아요. 주제나 메모를 조금 부드럽게 바꿔 다시 시도해 주세요.',
+          hint: ''
+        };
+      }
+      return {
+        title: '요청이 거부됐어요',
+        msg: apiMsg ? apiMsg.slice(0, 160) : '입력값을 다시 확인해 주세요.',
+        hint: '주제나 메모에 특수문자가 많으면 짧게 줄여서 다시 눌러 주세요.'
+      };
+    }
+    if (status >= 500) {
+      return {
+        title: '구글 서버가 잠시 붐비네요',
+        msg: '잠깐 기다렸다가 같은 버튼을 다시 눌러 주세요.',
+        hint: '1~2분 뒤에도 같으면 모델을 바꿔 보세요.'
+      };
+    }
+    return {
+      title: '초안을 못 만들었어요 (오류 ' + status + ')',
+      msg: apiMsg ? apiMsg.slice(0, 160) : '잠시 뒤 다시 시도해 주세요.',
+      hint: ''
+    };
+  }
+
+  /* ------------------------------------------------------------------
+     생성
+  ------------------------------------------------------------------ */
+  var ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
+
+  function extractText(data) {
+    var cand = data && data.candidates && data.candidates[0];
+    if (!cand || !cand.content || !cand.content.parts) { return ''; }
+    var buf = '';
+    for (var i = 0; i < cand.content.parts.length; i++) {
+      var part = cand.content.parts[i];
+      if (part && part.thought) { continue; }
+      if (part && typeof part.text === 'string') { buf += part.text; }
+    }
+    return buf.trim();
+  }
+
+  async function generate() {
+    if (busy) { return; }
+    hideError();
+
+    var key = (apiKeyEl.value || '').trim();
+    var topic = (topicEl.value || '').trim();
+    var memo = (memoEl.value || '').trim();
+    var model = modelEl.value;
+
+    if (!key) {
+      showError('API 키가 없어요', '위 1번 칸에 제미나이 API 키를 넣어 주세요.', 'aistudio.google.com → Get API key 에서 무료로 발급받을 수 있어요.');
+      apiKeyEl.focus();
+      return;
+    }
+    if (!topic) {
+      showError('주제를 적어 주세요', '어떤 글을 쓸지 한 줄만 적으면 돼요. 예: 수험표 할인 총정리', '');
+      topicEl.focus();
+      return;
+    }
+
+    store.set(LS_KEY, key);
+    store.set(LS_MODEL, model);
+    store.set(LS_COUNT, String(count));
+    refreshKeyPill();
+
+    var payload = {
+      systemInstruction: { role: 'system', parts: [{ text: buildSystemPrompt(currentTone()) }] },
+      contents: [{ role: 'user', parts: [{ text: buildUserPrompt(topic, count, memo) }] }],
+      generationConfig: { temperature: 0.85, topP: 0.95, maxOutputTokens: 8192 }
+    };
+
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () { controller.abort(); }, 150000);
+    var started = Date.now();
+
+    setLoading(true);
+    startStatus();
+
+    try {
+      var res = await fetch(ENDPOINT + encodeURIComponent(model) + ':generateContent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': key
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+
+      var raw = await res.text();
+      var data = null;
+      try { data = JSON.parse(raw); } catch (e) { data = null; }
+
+      if (!res.ok) {
+        var info = describeError(res.status, data);
+        showError(info.title, info.msg, info.hint);
+        setLoading(false);
+        return;
+      }
+
+      if (data && data.promptFeedback && data.promptFeedback.blockReason) {
+        showError('이 주제로는 답을 못 만들었어요', '표현이 걸린 것 같아요. 주제나 메모를 조금 바꿔 다시 시도해 주세요.', '');
+        setLoading(false);
+        return;
+      }
+
+      var text = extractText(data);
+      if (!text) {
+        showError('빈 답이 돌아왔어요', '다시 한 번 눌러 주세요. 계속 비어 있으면 모델을 바꿔 보세요.', '');
+        setLoading(false);
+        return;
+      }
+
+      var cand = data.candidates && data.candidates[0];
+      var truncated = cand && cand.finishReason === 'MAX_TOKENS';
+      if (truncated) {
+        text += '\n\n(※ 길이가 길어서 뒤가 잘렸어요. 3개(가볍게)로 다시 뽑으면 깔끔하게 나와요.)';
+      }
+
+      var secs = Math.max(1, Math.round((Date.now() - started) / 1000));
+      var meta = model.replace('gemini-', '') + ' · ' + secs + '초 · ' + text.length.toLocaleString() + '자';
+      showResult(text, meta);
+      store.set(LS_RESULT, JSON.stringify({ text: text, meta: meta, at: stampNow() }));
+      toast('초안 완성! 아래 복사 버튼을 눌러 주세요');
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        showError('시간이 너무 오래 걸려서 멈췄어요', '같은 버튼을 다시 눌러 주세요.', '계속 그러면 소제목을 3개(가볍게)로 줄여 보세요.');
+      } else {
+        showError(
+          '연결에 실패했어요',
+          '인터넷 연결을 확인해 주세요. 파일을 직접 열었을 때 브라우저 보안 때문에 막히는 경우도 있어요.',
+          'PC 크롬이나 사파리에서 이 파일을 열어 다시 시도해 보시고, 그래도 안 되면 키를 새로 넣어 보세요.'
+        );
+      }
+    } finally {
+      clearTimeout(timeoutId);
+      setLoading(false);
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     이벤트
+  ------------------------------------------------------------------ */
+  apiKeyEl.addEventListener('input', function () {
+    refreshKeyPill();
+    store.set(LS_KEY, (apiKeyEl.value || '').trim());
+  });
+
+  toggleKeyEl.addEventListener('click', function () {
+    var showing = apiKeyEl.type === 'text';
+    apiKeyEl.type = showing ? 'password' : 'text';
+    toggleKeyEl.textContent = showing ? '보기' : '숨기기';
+    toggleKeyEl.setAttribute('aria-pressed', showing ? 'false' : 'true');
+  });
+
+  clearKeyEl.addEventListener('click', function () {
+    apiKeyEl.value = '';
+    store.del(LS_KEY);
+    apiKeyEl.type = 'password';
+    toggleKeyEl.textContent = '보기';
+    toggleKeyEl.setAttribute('aria-pressed', 'false');
+    refreshKeyPill();
+    hideError();
+    toast('저장된 키를 지웠어요');
+  });
+
+  modelEl.addEventListener('change', function () {
+    store.set(LS_MODEL, modelEl.value);
+  });
+
+  chipsEl.addEventListener('click', function (e) {
+    var chip = e.target.closest ? e.target.closest('.chip') : null;
+    if (!chip) { return; }
+    topicEl.value = chip.getAttribute('data-topic') || '';
+    topicEl.focus();
+  });
+
+  hotBtn.addEventListener('click', loadHotTopics);
+
+  toneEl.addEventListener('input', function () {
+    var v = toneEl.value || '';
+    if (v.trim()) { store.set(LS_TONE, v); } else { store.del(LS_TONE); }
+    refreshToneCount();
+  });
+
+  resetToneBtn.addEventListener('click', function () {
+    toneEl.value = DEFAULT_TONE;
+    store.set(LS_TONE, DEFAULT_TONE);
+    refreshToneCount();
+    toast('기본 말투 예시로 되돌렸어요');
+  });
+
+  segBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var n = parseInt(btn.getAttribute('data-count'), 10);
+      applyCount((n === 3 || n === 4 || n === 5) ? n : 5);
+      store.set(LS_COUNT, String(count));
+    });
+  });
+
+  topicEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); generate(); }
+  });
+
+  generateBtn.addEventListener('click', generate);
+
+  if (clearResultBtn) {
+    clearResultBtn.addEventListener('click', function () {
+      clearResult();
+      toast('결과를 지웠어요');
+    });
+  }
+
+  /* ------------------------------------------------------------------
+     초기화
+  ------------------------------------------------------------------ */
+  (function init() {
+    var savedKey = store.get(LS_KEY);
+    if (savedKey) { apiKeyEl.value = savedKey; }
+
+    var savedModel = store.get(LS_MODEL);
+    if (savedModel) {
+      var okModel = false;
+      for (var i = 0; i < modelEl.options.length; i++) {
+        if (modelEl.options[i].value === savedModel) { okModel = true; }
+      }
+      if (okModel) { modelEl.value = savedModel; }
+    }
+
+    var savedCount = parseInt(store.get(LS_COUNT), 10);
+    if (savedCount === 3 || savedCount === 4 || savedCount === 5) { count = savedCount; }
+    applyCount(count);
+
+    var savedTone = store.get(LS_TONE);
+    toneEl.value = savedTone ? savedTone : DEFAULT_TONE;
+    refreshToneCount();
+
+    var savedHot = store.get(LS_HOT);
+    if (savedHot) {
+      try {
+        var hot = JSON.parse(savedHot);
+        if (hot && hot.date === todayKey() && hot.topics && hot.topics.length) {
+          renderHotChips(hot.topics.slice(0, 5));
+        }
+      } catch (e) {}
+    }
+
+    refreshKeyPill();
+
+    var savedResult = store.get(LS_RESULT);
+    if (savedResult) {
+      try {
+        var parsed = JSON.parse(savedResult);
+        if (parsed && parsed.text) {
+          currentText = parsed.text;
+          outputBody.classList.remove('is-empty');
+          outputBody.innerHTML = renderMarkdown(parsed.text);
+          toolbarTop.hidden = false;
+          toolbarBottom.hidden = false;
+          metaPill.textContent = '이전 초안 · ' + (parsed.at || '') + (parsed.meta ? ' · ' + parsed.meta : '');
+        }
+      } catch (e) {}
+    }
+  })();
+})();
+</script>
+</body>
+</html>

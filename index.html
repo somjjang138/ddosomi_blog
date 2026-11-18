@@ -333,6 +333,69 @@
     transition:all .15s;
   }
   .title-chip:hover{border-style:solid;background:var(--blue-100);}
+  .title-group{display:flex;flex-direction:column;gap:6px;}
+  .title-group + .title-group{margin-top:10px;}
+  .title-group-label{font-size:11.5px;font-weight:800;color:var(--blue-600);letter-spacing:-.1px;}
+
+  /* 오늘의 키워드 (trends.json) */
+  .trend-box{
+    border:1.5px solid var(--blue-100);
+    background:linear-gradient(180deg,#f7fbff 0%, #fdfeff 100%);
+    border-radius:14px;
+    padding:11px 11px 12px;
+    margin-bottom:10px;
+  }
+  .trend-head{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;}
+  .trend-head b{font-size:13.5px;font-weight:800;color:var(--blue-700);letter-spacing:-.2px;}
+  .trend-head .trend-stamp{font-size:11px;font-weight:700;color:#8fa1b4;white-space:nowrap;}
+  .trend-btns{display:flex;gap:6px;flex:none;}
+  .trend-btns .btn.sm{
+    font-size:11.5px;
+    font-weight:700;
+    padding:6px 9px;
+    border-radius:9px;
+    background:var(--white);
+    border-color:var(--blue-100);
+    color:var(--blue-700);
+  }
+  .trend-btns .btn.sm:disabled{opacity:.6;cursor:progress;}
+  .trend-list{display:flex;flex-direction:column;gap:6px;margin-top:9px;}
+  .trend-list:empty{display:none;}
+  .trend-card{
+    font:inherit;
+    cursor:pointer;
+    text-align:left;
+    display:block;
+    width:100%;
+    padding:9px 11px;
+    border-radius:11px;
+    border:1px solid var(--blue-100);
+    background:var(--white);
+    color:var(--ink);
+    transition:all .15s;
+  }
+  .trend-card:hover{border-color:var(--blue-400);background:var(--blue-50);}
+  .trend-card .trend-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .trend-card .trend-kw{font-size:13.5px;font-weight:800;color:var(--blue-700);letter-spacing:-.2px;}
+  .trend-card .trend-blog{
+    flex:none;
+    font-size:10.5px;
+    font-weight:800;
+    color:var(--blue-600);
+    background:var(--blue-50);
+    border:1px solid var(--blue-100);
+    border-radius:999px;
+    padding:2px 7px;
+  }
+  .trend-card .trend-reason{display:block;font-size:12px;color:var(--ink-soft);line-height:1.5;margin-top:4px;}
+  .trend-card .trend-angle{display:block;font-size:12px;color:#6b7d92;line-height:1.5;margin-top:2px;}
+  .trend-state{margin:9px 0 0;font-size:12px;font-weight:600;color:#8fa1b4;line-height:1.5;}
+
+  /* 함께 넣을 키워드 추천 */
+  .kw-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .kw-chips:empty{display:none;}
+  .kw-actions{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .kw-actions .hint{margin:0;font-size:11.5px;}
 
   /* tone sample */
   .tone{border:1.5px solid var(--line);border-radius:14px;background:#fcfdff;overflow:hidden;}
@@ -957,18 +1020,37 @@
         </div>
 
         <div class="field">
+          <div class="trend-box" id="trendBox">
+            <div class="trend-head">
+              <b>🔥 오늘의 키워드</b>
+              <span class="trend-stamp" id="trendTime" hidden></span>
+              <div class="trend-btns">
+                <button id="trendReloadBtn" class="btn ghost sm" type="button"><span class="trend-label">🔄 최신화</span></button>
+                <button id="hotBtn" class="btn ghost sm" type="button"><span class="hot-label">✨ AI 추천 5개 더</span></button>
+              </div>
+            </div>
+            <div class="trend-list" id="trendList"></div>
+            <p class="trend-state" id="trendState" aria-live="polite">오늘의 키워드를 불러오는 중…</p>
+          </div>
           <div class="label-row">
             <label for="topic">주제 / 메인 키워드 <span class="req">*</span></label>
-            <button id="hotBtn" class="btn ghost sm" type="button"><span class="hot-label">🔄 핫한 주제 5개 불러오기</span></button>
           </div>
           <input id="topic" type="text" placeholder="예: 수험표 할인 총정리 / 11월 코스트코 겨울템" autocomplete="off" />
           <div class="chips" id="chips"></div>
-          <p class="hint mini">오늘 날짜 기준 시즌·생활 주제 5개를 추천해요 (실시간 웹 검색은 무료 키 제한으로 미지원)</p>
+          <p class="hint mini">키워드를 누르면 주제 칸이 채워지고 블로그도 자동으로 바뀌어요. ✨ AI 추천은 제미나이 키가 필요해요.</p>
         </div>
 
         <div class="field">
-          <label for="keywordsSub">함께 넣을 키워드 <span class="opt">선택</span></label>
+          <div class="label-row">
+            <label for="keywordsSub">함께 넣을 키워드 <span class="opt">선택</span></label>
+            <button id="kwSuggestBtn" class="btn ghost sm" type="button"><span class="kw-label">✨ 키워드 추천</span></button>
+          </div>
           <input id="keywordsSub" type="text" placeholder="예: 코스트코 할인, 겨울 이불, 6,310원 (쉼표로 구분)" autocomplete="off" />
+          <div class="kw-chips" id="kwChips"></div>
+          <div class="kw-actions" id="kwActions" hidden>
+            <button id="kwAddAll" class="btn ghost sm" type="button">모두 넣기</button>
+            <span class="hint mini">칩을 누르면 키워드 칸에 쉼표로 추가돼요.</span>
+          </div>
           <p class="hint mini">본문에 자연스럽게 1~2회씩 넣고, 제목 추천에도 반영해요.</p>
         </div>
 
@@ -1105,7 +1187,7 @@
       <li><b>주제 넣고 글 초안 만들기</b> → ② 글 목록에 카드로 쌓여요 → ③ 네이버 대기함으로 옮겨 <b>👁️ 미리보기</b>로 확인하고 체크·복사 → 피클 채팅창에 붙여넣기</li>
     </ol>
     <p class="warn">사진 파일은 여기서 만들어지지 않아요. <b>📷 내 사진 첨부</b>에 폰·PC 사진을 넣으면 미리보기와 함께 초안에 저장되고, 빈자리는 <b>이미지 프롬프트</b>를 복사해 제미나이나 피클에게 넘기면 돼요.</p>
-    <p class="hint">💡 <b>🔄 핫한 주제 5개</b>는 오늘 날짜로 지금 시즌 주제를 뽑아 줘요(웹 검색이 아니라 모델의 시즌 감각이라 가격·일정은 메모에 적어 주세요). <b>✍️ 내 말투 예시</b>는 한 번 붙여두면 그 말투 그대로 계속 써요.</p>
+    <p class="hint">💡 <b>🔥 오늘의 키워드</b>는 페이지를 열 때마다 오늘 날짜의 실시간 키워드를 불러오고, <b>🔄 최신화</b>로 다시 받아요. 키워드를 누르면 주제와 블로그가 함께 맞춰져요. 키가 부족하면 <b>✨ AI 추천 5개 더</b>로 모델 추천을 보태고, <b>✍️ 내 말투 예시</b>는 한 번 붙여두면 그 말투 그대로 계속 써요.</p>
   </details>
 
   <p class="foot">키·말투 예시·초안·사진·키워드 메모는 이 브라우저(localStorage)에만 저장돼요 · 사진은 가로 800px JPEG로 줄여 저장하고, 공간이 부족하면 오래된 사진부터 빠져요 · AI 초안은 사실과 다를 수 있으니 가격·날짜는 한 번만 확인하고 발행해 주세요</p>
@@ -1429,7 +1511,7 @@
      상태
   ------------------------------------------------------------------ */
   var state = { tab: 'topic', blog: 'ttosomi', drafts: [], naver: [] };
-  var ui = { busy: false, hotBusy: false, titleBusy: false, expanded: {}, photos: [], previewId: '' };
+  var ui = { busy: false, hotBusy: false, trendBusy: false, kwBusy: false, titleBusy: false, expanded: {}, photos: [], previewId: '', hotChips: [], kwChips: [] };
   var count = 5;
 
   function loadJSON(key, fallback) {
@@ -2139,9 +2221,18 @@
       '아래 뼈대의 순서와 표기를 그대로 지켜 마크다운으로만 출력한다. 인사말이나 설명을 덧붙이지 않고, 마크다운 코드블록으로 감싸지도 않는다. 소제목은 1.부터 번호를 붙인다.',
       '',
       '## 제목 후보',
+      '[🔥 홈판 공식]',
       '1. "..."',
       '2. "..."',
       '3. "..."',
+      '[🔍 검색형]',
+      '4. ...',
+      '5. ...',
+      '6. ...',
+      '[✨ 혼합형]',
+      '7. ...',
+      '8. ...',
+      '9. ...',
       '',
       '## 본문',
       '',
@@ -2172,10 +2263,16 @@
       '(영어 1문단)',
       '',
       '[제목 후보 규칙]',
-      "- 3개 모두 '" + b.tags + "' 블로그에 맞는 제목이다. " + b.titleStyle,
-      '- 따옴표까지 포함해 33자 이내. 3개는 서로 다른 각도(가격·시간 반전 / 실패·후회 반전 / 예상 밖 발견)로 쓴다.',
+      '- 제목 후보는 정확히 9개, 유형별 3개씩이다. 묶음 표시([🔥 홈판 공식] · [🔍 검색형] · [✨ 혼합형])와 번호 1~9를 그대로 쓴다.',
+      "- 9개 모두 '" + b.tags + "' 블로그에 맞는 제목이다. " + b.titleStyle,
+      '- 따옴표까지 포함해 33자 이내.',
+      '- [🔥 홈판 공식] 1~3번: 1인칭 속마음 대사("...")로 시작하고 뒤에 반전되는 결과나 구체적 수치를 붙인다. 3개는 서로 다른 반전(가격·시간 / 실패·후회 / 예상 밖 발견)으로 쓴다.',
+      '- [🔍 검색형] 4~6번: 사람들이 실제로 검색하는 핵심 키워드를 제목 맨 앞에 두고 대상·시기·조건을 붙인다. 따옴표·감탄 없이 담백한 정보형으로 쓴다.',
+      '- [✨ 혼합형] 7~9번: 앞은 속마음·호기심 후킹, 뒤는 검색 키워드로 끝맺는 조합으로 쓴다.',
+      '- 9개 모두 서로 다른 문장이고, 같은 단어를 반복해 비슷한 제목을 만들지 않는다.',
       '- 주제·함께 넣을 키워드 중 최소 1개를 제목 안에 자연스럽게 넣는다.',
       '- 실제 내용과 맞지 않는 숫자·과장을 넣지 않는다.',
+      '- 제목 후보 1번이 대표 제목이 되고 썸네일 문구의 기준이 된다.',
       '',
       '[본문 규칙]',
       '- 도입부는 상황 인사로 시작해도 되지만, 반드시 이번 요청 주제에 맞는 완전히 새로운 첫 문장으로 쓴다. 프롬프트 안의 어떤 예시 문장도 그대로 옮겨 쓰지 않는다. 단 두세 줄 안에 결론(얼마 아꼈는지, 무엇이 좋은지)이 반드시 나온다.',
@@ -2251,9 +2348,9 @@
     lines.push('첨부한 내 사진: ' + (o.photos || 0) + '장' + ((o.photos || 0) > 0 ? ' → 1번 사진부터 1번 소제목 자리에 순서대로 들어감' : ' (없음)'));
     if (o.title) {
       lines.push('대표 제목(사용자 지정): ' + o.title);
-      lines.push('→ 제목 후보 1번은 위 문구를 그대로 쓰고, 2·3번만 다른 각도로 새로 쓴다.');
+      lines.push('→ 제목 후보 1번은 위 문구를 그대로 쓰고, 2~9번은 유형별 규칙대로 새로 쓴다.');
     } else {
-      lines.push('대표 제목: 비어 있음 → 홈판 공식으로 제목 후보 3개를 뽑고 그중 1번을 대표 제목으로 쓴다.');
+      lines.push('대표 제목: 비어 있음 → 유형별(홈판·검색형·혼합형) 제목 후보 9개를 뽑고 그중 1번을 대표 제목으로 쓴다.');
     }
     if (o.memo) {
       lines.push('참고 메모(사실로 반영):');
@@ -2269,16 +2366,32 @@
   function buildTitleSystem(blogKey, isAd) {
     var b = BLOGS[blogKey] || BLOGS.ttosomi;
     var lines = [
-      '너는 네이버 블로그 제목 카피라이터다. 아래 블로그·주제에 맞는 네이버 홈판(모바일 홈) 노출형 제목 3개를 만든다.',
+      '너는 네이버 블로그 제목 카피라이터다. 아래 블로그·주제에 맞는 네이버 블로그 제목 9개를 유형별 3개씩 만든다.',
       '',
       '[블로그] ' + b.full + ' — ' + b.focus,
       '[제목 톤] ' + b.titleStyle,
       '',
+      '[출력 형식] 아래 세 묶음과 순서를 그대로 지킨다. 각 묶음은 묶음 제목 한 줄 + 번호 붙은 제목 3줄.',
+      '## 🔥 홈판 공식',
+      '1) 제목',
+      '2) 제목',
+      '3) 제목',
+      '## 🔍 검색형',
+      '1) 제목',
+      '2) 제목',
+      '3) 제목',
+      '## ✨ 혼합형',
+      '1) 제목',
+      '2) 제목',
+      '3) 제목',
+      '',
       '[규칙]',
-      "- 정확히 3줄. 각 줄은 '1) 제목' 형식으로 번호를 붙이고 제목만 쓴다. 설명·이유·이모지·머리말은 쓰지 않는다.",
+      '- 제목만 쓴다. 이유·설명·머리말·따옴표 장식은 붙이지 않는다.',
       '- 따옴표를 포함해 33자 이내. 넘으면 33자 안쪽으로 줄인다.',
-      '- 홈판 공식: 1인칭 속마음 대사("...")로 시작하고, 뒤에 반전되는 결과나 구체적 수치를 붙인다.',
-      '- 3개는 서로 다른 각도(가격·시간 반전 / 실패·후회 반전 / 예상 밖 발견)로 쓴다.',
+      '- 🔥 홈판 공식: 1인칭 속마음 대사("...")로 시작하고, 뒤에 반전되는 결과나 구체적 수치를 붙인다. 3개는 서로 다른 반전(가격·시간 / 실패·후회 / 예상 밖 발견)으로 쓴다.',
+      '- 🔍 검색형: 사람들이 실제로 검색하는 핵심 키워드를 제목 맨 앞에 두고, 뒤에 대상·시기·조건을 붙인다. 따옴표·감탄 없이 담백한 정보형으로 쓴다.',
+      '- ✨ 혼합형: 앞은 속마음·호기심 후킹, 뒤는 검색 키워드로 끝맺는 조합으로 쓴다.',
+      '- 9개 모두 서로 다른 문장. 같은 단어를 반복해 비슷한 제목을 만들지 않는다.',
       '- 주제·함께 넣을 키워드 중 최소 1개를 제목 안에 자연스럽게 넣는다.',
       "- '무조건', '역대급', '최고', '완벽' 같은 과장·단정 표현을 쓰지 않는다. 확인되지 않은 숫자도 쓰지 않는다.",
       "- 블로그 닉네임 인사('또소미에요' 등)를 제목에 넣지 않는다."
@@ -2297,7 +2410,37 @@
     lines.push('오늘 날짜: ' + todayKorean());
     lines.push('체험단 글: ' + (o.isAd ? '예' : '아니오'));
     lines.push('');
-    lines.push('위 조건대로 제목 3개만 뽑아 줘.');
+    lines.push('위 형식(🔥 홈판 공식 3개 · 🔍 검색형 3개 · ✨ 혼합형 3개) 그대로 제목 9개만 뽑아 줘.');
+    return lines.join('\n');
+  }
+
+  function buildKeywordSystem(blogKey) {
+    var b = BLOGS[blogKey] || BLOGS.ttosomi;
+    return [
+      "너는 네이버 블로그 '" + b.full + "'(" + b.focus + ")의 키워드 플래너야.",
+      '주어진 주제로 글을 쓸 때 본문·제목·해시태그에 같이 넣으면 검색 유입에 도움이 될 연관·세부 키워드 6개를 뽑아라.',
+      '',
+      '[블로그] ' + b.full + ' — ' + b.focus,
+      '[독자] ' + b.reader,
+      '',
+      '[조건]',
+      "- 정확히 6줄. 각 줄은 '1) 키워드' 형식으로 번호를 붙이고 키워드만 쓴다. 설명·이유·이모지·따옴표는 쓰지 않는다.",
+      '- 키워드는 2~12자의 한국어이고, 사람들이 네이버에 실제로 칠 만한 말로 만든다.',
+      '- 6개는 서로 다른 유형을 섞어서 뽑는다(지역·장소 / 시즌·시기 / 대상·상황 / 행동·방법 / 가격·비교 / 정보·질문).',
+      '- 주제를 그대로 반복하거나 비슷한 말로만 바꾸지 않는다.',
+      '- 광고성 문구·과장된 표현·확인되지 않은 상품명은 넣지 않는다.',
+      '- 6줄만 출력한다. 인사말·설명·빈 줄을 넣지 않는다.'
+    ].join('\n');
+  }
+
+  function buildKeywordPrompt(o) {
+    var lines = [];
+    lines.push('블로그: ' + (BLOGS[o.blog] || BLOGS.ttosomi).name);
+    lines.push('주제 / 메인 키워드: ' + o.topic);
+    if (o.keywords) { lines.push('이미 넣어둔 키워드(같은 말은 빼고): ' + o.keywords); }
+    lines.push('오늘 날짜: ' + todayKorean());
+    lines.push('');
+    lines.push('위 조건대로 연관·세부 키워드 6개만 뽑아 줘.');
     return lines.join('\n');
   }
 
@@ -2361,6 +2504,118 @@
       if (/^["“].*["”]$/.test(t)) { t = t.slice(1, -1).trim(); }
       t = t.replace(/[.。]$/, '');
       if (t.length < 6 || t.length > 40) { continue; }
+      out.push(t);
+    }
+    return out;
+  }
+
+  /* 제목 3유형(홈판·검색형·혼합형) 묶음 파싱 */
+  var TITLE_GROUPS = [
+    { key: 'home', label: '🔥 홈판 공식', test: /홈판|속마음/ },
+    { key: 'search', label: '🔍 검색형', test: /검색형|검색 유입|검색어/ },
+    { key: 'mixed', label: '✨ 혼합형', test: /혼합형|혼합|믹스/ }
+  ];
+
+  function cleanTitleLine(line) {
+    var t = String(line || '').trim();
+    t = t.replace(/^[-*•]\s*/, '').replace(/^\d{1,2}\s*[.)]\s*/, '');
+    t = t.replace(/^\*\*|\*\*$/g, '').trim();
+    if (/^["“].*["”]$/.test(t)) { t = t.slice(1, -1).trim(); }
+    t = t.replace(/[.。]$/, '').trim();
+    return t;
+  }
+
+  function parseTitleGroups(text) {
+    var lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
+    var groups = [];
+    var cur = -1;
+
+    for (var i = 0; i < lines.length; i++) {
+      var raw = lines[i].trim();
+      if (!raw || /^```/.test(raw)) { continue; }
+
+      var head = raw.replace(/^#{1,6}\s*/, '').replace(/^\[|\]$/g, '').replace(/^\*\*|\*\*$/g, '').trim();
+      var gi = -1;
+      if (head.length <= 30) {
+        for (var k = 0; k < TITLE_GROUPS.length; k++) {
+          if (TITLE_GROUPS[k].test.test(head)) { gi = k; break; }
+        }
+      }
+      if (gi >= 0) {
+        cur = -1;
+        for (var c = 0; c < groups.length; c++) {
+          if (groups[c].key === TITLE_GROUPS[gi].key) { cur = c; break; }
+        }
+        if (cur < 0) {
+          groups.push({ key: TITLE_GROUPS[gi].key, label: TITLE_GROUPS[gi].label, titles: [] });
+          cur = groups.length - 1;
+        }
+        continue;
+      }
+
+      var t = cleanTitleLine(raw);
+      if (!t || t.length < 6 || t.length > 40) { continue; }
+      if (t.indexOf(':') >= 0 || t.indexOf('→') >= 0) { continue; }
+
+      if (cur < 0) {
+        var exists = -1;
+        for (var e = 0; e < groups.length; e++) { if (groups[e].key === 'home') { exists = e; break; } }
+        if (exists < 0) {
+          groups.push({ key: 'home', label: TITLE_GROUPS[0].label, titles: [] });
+          exists = groups.length - 1;
+        }
+        cur = exists;
+      }
+      if (groups[cur].titles.length >= 3) { continue; }
+      groups[cur].titles.push(t);
+    }
+
+    var kept = [];
+    for (var g = 0; g < groups.length; g++) {
+      if (groups[g].titles.length) { kept.push(groups[g]); }
+    }
+    return kept;
+  }
+
+  function countTitles(groups) {
+    var n = 0;
+    for (var i = 0; i < groups.length; i++) { n += groups[i].titles.length; }
+    return n;
+  }
+
+  function renderTitleGroups(groups) {
+    var html = '';
+    for (var i = 0; i < groups.length; i++) {
+      var g = groups[i];
+      if (!g.titles.length) { continue; }
+      html += '<div class="title-group"><span class="title-group-label">' + escapeHtml(g.label) + ' ' + g.titles.length + '개</span>';
+      for (var j = 0; j < g.titles.length; j++) {
+        html += '<button class="title-chip" type="button" data-title="' + escapeHtml(g.titles[j]) + '">' +
+          escapeHtml(g.titles[j]) + '</button>';
+      }
+      html += '</div>';
+    }
+    return html;
+  }
+
+  /* 연관·세부 키워드 파싱 */
+  function parseKeywords(text, max) {
+    var limit = max || 6;
+    var lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
+    var out = [];
+    for (var i = 0; i < lines.length; i++) {
+      if (out.length >= limit) { break; }
+      var t = lines[i].trim();
+      if (!t || /^```/.test(t)) { continue; }
+      if (t.indexOf(':') >= 0 || t.indexOf('→') >= 0) { continue; }
+      t = t.replace(/^[-*•]\s*/, '').replace(/^\d{1,2}\s*[.)]\s*/, '');
+      t = t.replace(/^\*\*|\*\*$/g, '').trim();
+      t = t.replace(/^["'“”]+|["'“”]+$/g, '').trim();
+      t = t.split(' — ')[0].split(' - ')[0];
+      t = t.replace(/\s*\([^)]*\)\s*$/, '').trim();
+      t = t.replace(/^#/, '').trim();
+      if (t.length < 2 || t.length > 20) { continue; }
+      if (out.indexOf(t) >= 0) { continue; }
       out.push(t);
     }
     return out;
@@ -2669,7 +2924,7 @@
       var r = await callGemini(key, model, {
         systemInstruction: { role: 'system', parts: [{ text: buildTitleSystem(o.blog, o.isAd) }] },
         contents: [{ role: 'user', parts: [{ text: buildTitlePrompt(o) }] }],
-        generationConfig: { temperature: 0.9, topP: 0.95, maxOutputTokens: 500 }
+        generationConfig: { temperature: 0.9, topP: 0.95, maxOutputTokens: 900 }
       }, 60000);
 
       if (!r.ok) {
@@ -2678,19 +2933,15 @@
         return;
       }
 
-      var titles = parseTitles(extractText(r.data));
-      if (!titles.length) {
+      var groups = parseTitleGroups(extractText(r.data));
+      var total = countTitles(groups);
+      if (!total) {
         showError('제목을 못 받았어요', '다시 한 번 눌러 주세요. 계속 비어 있으면 모델을 바꿔 보세요.', '');
         return;
       }
 
-      var html = '';
-      for (var i = 0; i < titles.length; i++) {
-        html += '<button class="title-chip" type="button" data-title="' + escapeHtml(titles[i]) + '">' +
-          escapeHtml(titles[i]) + '</button>';
-      }
-      $('titleChips').innerHTML = html;
-      toast('제목 ' + titles.length + '개를 추천했어요. 마음에 드는 걸 누르면 제목 칸에 들어가요');
+      $('titleChips').innerHTML = renderTitleGroups(groups);
+      toast('제목 ' + total + '개를 추천했어요. 유형별로 골라 누르면 제목 칸에 들어가요');
     } catch (err) {
       if (err && err.name === 'AbortError') {
         showError('제목을 못 받았어요', '시간이 너무 오래 걸려서 멈췄어요. 다시 한 번 눌러 주세요.', '');
@@ -2705,13 +2956,208 @@
   }
 
   /* ------------------------------------------------------------------
-     핫한 주제 5개
+     🔥 오늘의 키워드 (trends.json)
   ------------------------------------------------------------------ */
-  function renderHotChips(topics) {
+  var TRENDS_URL = './trends.json';
+  var TREND_BLOG_KEYS = { '또소미': 'ttosomi', '솜숑미': 'somsongmi', '온앤원스터디': 'onone' };
+
+  function trendBlogKey(name) {
+    var n = trim(name);
+    if (TREND_BLOG_KEYS[n]) { return TREND_BLOG_KEYS[n]; }
+    return '';
+  }
+
+  function renderTrends(data) {
+    var list = (data && data.keywords) || [];
     var html = '';
+    var shown = 0;
+
+    for (var i = 0; i < list.length; i++) {
+      var k = list[i] || {};
+      var name = trim(k.keyword);
+      if (!name) { continue; }
+      var blogName = trim(k.blog);
+      var reason = trim(k.reason);
+      var angle = trim(k.angle);
+      html += '<button class="trend-card" type="button" data-keyword="' + escapeHtml(name) + '" data-blog="' + escapeHtml(trendBlogKey(blogName)) + '">' +
+        '<span class="trend-top"><span class="trend-kw">' + escapeHtml(name) + '</span>' +
+        (blogName ? '<span class="trend-blog">' + escapeHtml(blogName) + '</span>' : '') +
+        '</span>' +
+        (reason ? '<span class="trend-reason">' + escapeHtml(reason) + '</span>' : '') +
+        (angle ? '<span class="trend-angle">✍️ ' + escapeHtml(angle) + '</span>' : '') +
+        '</button>';
+      shown++;
+    }
+
+    $('trendList').innerHTML = html;
+    if (shown) {
+      $('trendState').hidden = true;
+      $('trendState').textContent = '';
+    } else {
+      $('trendState').hidden = false;
+      $('trendState').textContent = '오늘의 키워드가 아직 비어 있어요. 🔄 최신화를 눌러 보세요.';
+    }
+
+    var stamp = trim(data && data.updatedAt);
+    if (stamp) {
+      $('trendTime').textContent = '업데이트 ' + stamp;
+      $('trendTime').hidden = false;
+    } else {
+      $('trendTime').hidden = true;
+      $('trendTime').textContent = '';
+    }
+    return shown;
+  }
+
+  function setTrendLoading(on) {
+    ui.trendBusy = on;
+    var btn = $('trendReloadBtn');
+    btn.disabled = on;
+    btn.querySelector('.trend-label').textContent = on ? '불러오는 중…' : '🔄 최신화';
+  }
+
+  async function loadTrends() {
+    if (ui.trendBusy) { return; }
+    setTrendLoading(true);
+    if (!$('trendList').innerHTML) {
+      $('trendState').hidden = false;
+      $('trendState').textContent = '오늘의 키워드를 불러오는 중…';
+    }
+
+    try {
+      var r = await fetch(TRENDS_URL + '?v=' + Date.now(), { cache: 'no-store' });
+      if (!r || !r.ok) { throw new Error('http ' + (r && r.status)); }
+      var data = null;
+      if (typeof r.json === 'function') {
+        data = await r.json();
+      } else {
+        var raw = await r.text();
+        data = JSON.parse(raw);
+      }
+      renderTrends(data || {});
+    } catch (err) {
+      $('trendList').innerHTML = '';
+      $('trendState').hidden = false;
+      $('trendState').textContent = '오늘의 키워드를 못 불러왔어요. 🔄 최신화를 다시 눌러 주세요.';
+      $('trendTime').hidden = true;
+      $('trendTime').textContent = '';
+    } finally {
+      setTrendLoading(false);
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     ✨ 키워드 추천 (함께 넣을 키워드)
+  ------------------------------------------------------------------ */
+  function renderKwChips(list) {
+    var html = '';
+    var kept = [];
+    for (var i = 0; i < list.length; i++) {
+      var w = trim(list[i]);
+      if (!w) { continue; }
+      kept.push(w);
+      html += '<button class="chip kw" type="button" data-kw="' + escapeHtml(w) + '">+ ' + escapeHtml(w) + '</button>';
+    }
+    ui.kwChips = kept;
+    $('kwChips').innerHTML = html;
+    $('kwActions').hidden = !html;
+    return kept.length;
+  }
+
+  function appendKeyword(word) {
+    var w = trim(word).replace(/^#/, '');
+    if (!w) { return false; }
+
+    var cur = trim($('keywordsSub').value);
+    var parts = cur ? cur.split(',') : [];
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var p = trim(parts[i]);
+      if (p) { out.push(p); }
+    }
+    for (var j = 0; j < out.length; j++) {
+      if (out[j] === w) { return false; }
+    }
+    out.push(w);
+    $('keywordsSub').value = out.join(', ');
+    return true;
+  }
+
+  async function suggestKeywords() {
+    if (ui.kwBusy) { return; }
+    hideError();
+    switchTab('topic', true);
+
+    var key = requireKey();
+    if (!key) { return; }
+
+    var topic = trim($('topic').value);
+    if (!topic) {
+      showError('주제를 먼저 적어 주세요', '키워드는 주제를 보고 뽑아요. 주제 칸에 한 줄만 적어 주세요.', '');
+      $('topic').focus();
+      return;
+    }
+
+    var o = { blog: state.blog, topic: topic, keywords: trim($('keywordsSub').value) };
+    var model = $('model').value;
+    var btn = $('kwSuggestBtn');
+    var label = btn.querySelector('.kw-label');
+
+    ui.kwBusy = true;
+    btn.disabled = true;
+    label.textContent = '추천 중…';
+    $('kwChips').innerHTML = '';
+    $('kwActions').hidden = true;
+
+    try {
+      var r = await callGemini(key, model, {
+        systemInstruction: { role: 'system', parts: [{ text: buildKeywordSystem(o.blog) }] },
+        contents: [{ role: 'user', parts: [{ text: buildKeywordPrompt(o) }] }],
+        generationConfig: { temperature: 0.9, topP: 0.95, maxOutputTokens: 400 }
+      }, 60000);
+
+      if (!r.ok) {
+        var info = describeError(r.status, r.data);
+        showError(info.title, info.msg, info.hint);
+        return;
+      }
+
+      var list = parseKeywords(extractText(r.data), 6);
+      if (!list.length) {
+        showError('키워드를 못 받았어요', '다시 한 번 눌러 주세요. 계속 비어 있으면 모델을 바꿔 보세요.', '');
+        return;
+      }
+
+      renderKwChips(list);
+      toast('연관 키워드 ' + list.length + '개를 추천했어요. 누르면 키워드 칸에 쉼표로 들어가요');
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        showError('키워드를 못 받았어요', '시간이 너무 오래 걸려서 멈췄어요. 다시 한 번 눌러 주세요.', '');
+      } else {
+        showError('연결에 실패했어요', '인터넷 연결을 확인해 주세요.', '');
+      }
+    } finally {
+      ui.kwBusy = false;
+      btn.disabled = false;
+      label.textContent = '✨ 키워드 추천';
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     ✨ AI 추천 5개 더 (모델 추천, 키 필요)
+  ------------------------------------------------------------------ */
+  function renderHotChips(topics, append) {
+    var list = (append && ui.hotChips) ? ui.hotChips.slice() : [];
     for (var i = 0; i < topics.length; i++) {
-      html += '<button class="chip hot" type="button" data-topic="' + escapeHtml(topics[i]) + '">' +
-        escapeHtml(topics[i]) + '</button>';
+      var t = trim(topics[i]);
+      if (t && list.indexOf(t) < 0) { list.push(t); }
+    }
+    ui.hotChips = list;
+
+    var html = '';
+    for (var j = 0; j < list.length; j++) {
+      html += '<button class="chip hot" type="button" data-topic="' + escapeHtml(list[j]) + '">' +
+        escapeHtml(list[j]) + '</button>';
     }
     $('chips').innerHTML = html;
   }
@@ -2719,7 +3165,7 @@
   function setHotLoading(on) {
     ui.hotBusy = on;
     $('hotBtn').disabled = on;
-    $('hotBtn').querySelector('.hot-label').textContent = on ? '불러오는 중…' : '🔄 핫한 주제 5개 불러오기';
+    $('hotBtn').querySelector('.hot-label').textContent = on ? '추천 중…' : '✨ AI 추천 5개 더';
   }
 
   async function loadHotTopics() {
@@ -2753,9 +3199,9 @@
         return;
       }
 
-      renderHotChips(topics);
-      store.set(K.hot, JSON.stringify({ date: todayKey(), blog: state.blog, topics: topics }));
-      toast('오늘 뜰 주제 ' + topics.length + '개를 불러왔어요');
+      renderHotChips(topics, true);
+      store.set(K.hot, JSON.stringify({ date: todayKey(), blog: state.blog, topics: ui.hotChips }));
+      toast('AI 추천 주제 ' + topics.length + '개를 더했어요');
     } catch (err) {
       if (err && err.name === 'AbortError') {
         showError('주제를 못 불러왔어요', '시간이 너무 오래 걸려서 멈췄어요. 같은 버튼을 다시 눌러 주세요.', '');
@@ -2829,6 +3275,38 @@
   });
 
   $('hotBtn').addEventListener('click', loadHotTopics);
+
+  $('trendReloadBtn').addEventListener('click', loadTrends);
+
+  $('trendList').addEventListener('click', function (e) {
+    var card = e.target && e.target.closest ? e.target.closest('.trend-card') : null;
+    if (!card) { return; }
+    $('topic').value = card.getAttribute('data-keyword') || '';
+    var bk = card.getAttribute('data-blog');
+    if (bk && BLOGS[bk]) { applyBlog(bk); }
+    switchTab('topic', true);
+    $('topic').focus();
+    toast('키워드를 넣고 블로그를 맞췄어요');
+  });
+
+  $('kwSuggestBtn').addEventListener('click', suggestKeywords);
+
+  $('kwChips').addEventListener('click', function (e) {
+    var chip = e.target && e.target.closest ? e.target.closest('.chip') : null;
+    if (!chip) { return; }
+    var w = chip.getAttribute('data-kw') || '';
+    if (appendKeyword(w)) { toast('"' + w + '" 키워드를 넣었어요'); }
+    else { toast('이미 들어 있어요'); }
+  });
+
+  $('kwAddAll').addEventListener('click', function () {
+    var list = ui.kwChips || [];
+    var added = 0;
+    for (var i = 0; i < list.length; i++) {
+      if (appendKeyword(list[i])) { added++; }
+    }
+    toast(added ? '키워드 ' + added + '개를 넣었어요' : '이미 다 들어 있어요');
+  });
   $('titleSuggestBtn').addEventListener('click', suggestTitles);
   $('generateBtn').addEventListener('click', generate);
 
@@ -3096,6 +3574,8 @@
 
     switchTab(store.get(K.tab) || 'topic', true);
     refreshKeyPill();
+
+    loadTrends();
   })();
 
   /* 테스트 훅 (실제 화면에는 영향 없음) */
@@ -3108,6 +3588,13 @@
       generate: generate,
       suggestTitles: suggestTitles,
       loadHotTopics: loadHotTopics,
+      loadTrends: loadTrends,
+      renderHotChips: renderHotChips,
+      renderTrends: renderTrends,
+      suggestKeywords: suggestKeywords,
+      appendKeyword: appendKeyword,
+      parseTitleGroups: parseTitleGroups,
+      parseKeywords: parseKeywords,
       switchTab: switchTab,
       renderDrafts: renderDrafts,
       renderNaver: renderNaver,

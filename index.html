@@ -10,6 +10,9 @@
 <!-- 네이버 블로그 기본 서체(나눔바른고딕) — 네이버 공식 웹폰트 -->
 <link rel="preconnect" href="https://hangeul.pstatic.net" crossorigin />
 <link rel="stylesheet" href="https://hangeul.pstatic.net/hangeul_static/css/nanum-barun-gothic.css" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Gaegu:wght@400;700&display=swap" />
 <style>
   :root{
     --cream:#fdf9f1;
@@ -3252,7 +3255,7 @@
   }
 
   /* 생성 이미지는 localStorage를 아끼려고 JPEG로 줄여 저장한다 */
-  function compressImage(dataUrl, maxSide, quality) {
+  function compressImage(dataUrl, maxSide, quality, zoom) {
     return new Promise(function (resolve) {
       try {
         var img = new Image();
@@ -3261,9 +3264,16 @@
             var w = img.naturalWidth || img.width || 0;
             var h = img.naturalHeight || img.height || 0;
             if (!w || !h) { resolve(dataUrl); return; }
+            var z = (zoom && zoom > 1) ? zoom : 1;
             var scale = Math.min(1, (maxSide || 1000) / Math.max(w, h));
             var cw = Math.max(1, Math.round(w * scale));
             var ch = Math.max(1, Math.round(h * scale));
+            if (z > 1) {
+              var cap = maxSide || 1000;
+              var s2 = Math.min(1, cap / Math.max(w, h));
+              cw = Math.max(1, Math.round(w * s2));
+              ch = Math.max(1, Math.round(h * s2));
+            }
             var canvas = document.createElement('canvas');
             canvas.width = cw;
             canvas.height = ch;
@@ -3271,7 +3281,13 @@
             if (!ctx) { resolve(dataUrl); return; }
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, cw, ch);
-            ctx.drawImage(img, 0, 0, cw, ch);
+            if (z > 1) {
+              var sw = w / z;
+              var sh = h / z;
+              ctx.drawImage(img, (w - sw) / 2, (h - sh) / 2, sw, sh, 0, 0, cw, ch);
+            } else {
+              ctx.drawImage(img, 0, 0, cw, ch);
+            }
             resolve(canvas.toDataURL('image/jpeg', quality || 0.72));
           } catch (e) { resolve(dataUrl); }
         };
@@ -3345,10 +3361,10 @@
     ctx.closePath();
   }
 
-  function drawCover(ctx, img, W, H) {
+  function drawCover(ctx, img, W, H, zoom) {
     var iw = img.naturalWidth || img.width || W;
     var ih = img.naturalHeight || img.height || H;
-    var scale = Math.max(W / iw, H / ih);
+    var scale = Math.max(W / iw, H / ih) * (zoom || 1);
     var dw = iw * scale;
     var dh = ih * scale;
     ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
@@ -3397,7 +3413,7 @@
 
           /* 1) 배경 */
           if (img) {
-            drawCover(ctx, img, W, H);
+            drawCover(ctx, img, W, H, 1.06);
           } else {
             var g = ctx.createLinearGradient ? ctx.createLinearGradient(0, 0, W, H) : null;
             if (g && g.addColorStop) {
@@ -3492,8 +3508,10 @@
         } catch (e) { resolve(''); }
       };
 
-      if (!bgDataUrl) { paint(null); return; }
-      loadImageEl(bgDataUrl, 20000).then(function (img) { paint(img); }, function () { paint(null); });
+      ensureThumbFonts().then(function () {
+        if (!bgDataUrl) { paint(null); return; }
+        loadImageEl(bgDataUrl, 20000).then(function (img) { paint(img); }, function () { paint(null); });
+      });
     });
   }
 
@@ -3553,7 +3571,7 @@
     ui.imgLog[id] = '이미지 준비 중…';
     rerenderLists();
 
-    if (jobs.length > 1) { await ensureThumbFonts(); }
+    await ensureThumbFonts();
 
     var done = 0;
     var detail = [];
@@ -3585,7 +3603,7 @@
         var composed = await renderThumbnail(dataUrl, d);
         if (composed) { dataUrl = composed; }
       }
-      var small = await compressImage(dataUrl, job.kind === 'thumb' ? 1000 : 1000, job.kind === 'thumb' ? 0.9 : 0.72);
+      var small = await compressImage(dataUrl, 1000, job.kind === 'thumb' ? 0.9 : 0.76, res.free ? 1.12 : 1);
       setDraftImage(d, job.kind, job.slot, small, job.prompt, res.model);
       saveAll();
       done++;

@@ -359,7 +359,13 @@
     color:var(--blue-700);
   }
   .trend-btns .btn.sm:disabled{opacity:.6;cursor:progress;}
-  .trend-list{display:flex;flex-direction:column;gap:6px;margin-top:9px;}
+  .trend-list{
+    display:flex;flex-direction:column;gap:6px;margin-top:9px;
+    max-height:252px;overflow-y:auto;padding-right:2px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .trend-list::-webkit-scrollbar{width:6px;}
+  .trend-list::-webkit-scrollbar-thumb{background:var(--blue-200);border-radius:999px;}
   .trend-list:empty{display:none;}
   .trend-card{
     font:inherit;

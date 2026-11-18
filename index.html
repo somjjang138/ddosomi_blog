@@ -1989,7 +1989,9 @@
     $('pickCount').textContent = total ? picked + ' / ' + total + ' 선택' : '';
     $('selectAll').checked = total > 0 && picked === total;
     $('selectAll').disabled = total === 0;
-    $('sendBar').hidden = total === 0;
+    $('sendBar').hidden = false;
+    $('copySelected').hidden = total === 0;
+    $('clearSelected').hidden = total === 0;
 
     if (!total) { list.innerHTML = ''; return; }
 
